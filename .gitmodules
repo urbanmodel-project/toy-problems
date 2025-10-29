@@ -1,0 +1,3 @@
+[submodule "externals/kokkos"]
+	path = externals/kokkos
+	url = git@github.com:E3SM-Project/kokkos
