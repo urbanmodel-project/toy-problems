@@ -1,4 +1,5 @@
 #include "kokkos_utils/vector_add.hpp"
+#include "DataTypes.hpp"
 #include <iostream>
 
 namespace kokkos_utils {

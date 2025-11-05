@@ -21,6 +21,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+#add_definitions(-DURBANXX_ENABLE_OPENMP)
+add_definitions(-DURBANXX_LAYOUT_RIGHT)
+
 # -------------------------------------------------------------------
 # Add Kokkos submodule
 # -------------------------------------------------------------------
