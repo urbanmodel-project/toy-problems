@@ -1,6 +1,8 @@
 #include <Kokkos_Core.hpp>
 #include <UrbanData.hpp>
 #include <UrbanDataAllocator.hpp>
+#include <iomanip>
+#include <iostream>
 
 namespace URBANXX {
 // Constructor Definition
@@ -96,6 +98,37 @@ void UrbanDataAllocator::allocate_all_views() const {
   RoadTypeAllocateViews(N_LUN, N_RAD, data_bundle.PerviousRoad);
 
   printf("All primary Views successfully allocated on device.\n");
+}
+
+template <typename ViewType>
+void print_view_1d(const ViewType &view, const std::string &name = "") {
+  auto h_view = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace(), view);
+  std::cout << name << ":\n";
+  for (std::size_t i = 0; i < h_view.extent(0); ++i) {
+    std::cout << i << " " << std::setprecision(15) << h_view(i) << "\n";
+  }
+  std::cout << "\n";
+}
+
+void UrbanDataAllocator::initialize_canyon_geometry() const {
+
+  int N_LUN = data_bundle.N_LUN;
+  int N_RAD = data_bundle.N_RAD;
+
+  const Real HWR_TBD = 4.80000019073486;
+  // const Real HWR_HD  = 1.60000002384186;
+  // const Real HWR_MD  = 0.600000023841858;
+
+  HostArray1DR8 CanyonHwrH = data_bundle.geometry.CanyonHwrH;
+  Array1DR8 CanyonHwr = data_bundle.geometry.CanyonHwr;
+  for (int i = 0; i < N_LUN; i++) {
+    CanyonHwrH(i) = HWR_TBD;
+  }
+
+  Kokkos::deep_copy(CanyonHwr, CanyonHwrH);
+
+  if (0)
+    print_view_1d(CanyonHwr, "CanyonHwr");
 }
 
 } // namespace URBANXX

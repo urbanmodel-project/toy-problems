@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
             Kokkos::print_configuration(std::cout);
         }
 
-        const int N_LUN = 1000;
+        const int N_LUN = 3;
         const int N_RAD = 2;
         UrbanSharedDataBundle simulation_bundle = {
                 .N_LUN = N_LUN,
@@ -38,6 +38,7 @@ int main(int argc, char* argv[]) {
 
         UrbanDataAllocator allocator(simulation_bundle);
         allocator.allocate_all_views();
+        allocator.initialize_canyon_geometry();
     }
         
     }
