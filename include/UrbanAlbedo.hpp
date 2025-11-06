@@ -16,6 +16,7 @@ public:
 
   void set_solar_inputs() const;
   void compute_incident_radiation() const;
+  void compute_snow_albedo() const;
 };
 } // namespace URBANXX
 

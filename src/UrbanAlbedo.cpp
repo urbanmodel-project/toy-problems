@@ -127,4 +127,45 @@ void UrbanAlbedo::compute_incident_radiation() const {
   }
 }
 
+void UrbanAlbedo::compute_snow_albedo() const {
+  std::cout << "In compute_snow_albedo\n";
+
+  const Real rpi = M_PI;
+  const Real SNOW_ALBEDO_VIS = 0.66;
+  const Real SNOW_ALBEDO_NIR = 0.56;
+
+  int N_LUN = data_bundle.N_LUN;
+  int N_RAD = data_bundle.N_RAD;
+  Kokkos::parallel_for(
+      "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
+        const Real coszen = data_bundle.input.Coszen(c);
+
+        Array2DR8 albsnd_roof = data_bundle.CombinedRoad.SnowAlbedo.dir;
+        Array2DR8 albsni_roof = data_bundle.CombinedRoad.SnowAlbedo.dif;
+
+        Array2DR8 albsnd_improad = data_bundle.ImperviousRoad.SnowAlbedo.dir;
+        Array2DR8 albsni_improad = data_bundle.ImperviousRoad.SnowAlbedo.dif;
+
+        Array2DR8 albsnd_perroad = data_bundle.PerviousRoad.SnowAlbedo.dir;
+        Array2DR8 albsni_perroad = data_bundle.PerviousRoad.SnowAlbedo.dif;
+
+        if (coszen > 0) {
+          albsnd_roof(0, c) = SNOW_ALBEDO_VIS;
+          albsnd_roof(1, c) = SNOW_ALBEDO_NIR;
+          albsni_roof(0, c) = SNOW_ALBEDO_VIS;
+          albsni_roof(1, c) = SNOW_ALBEDO_NIR;
+
+          albsnd_improad(0, c) = SNOW_ALBEDO_VIS;
+          albsnd_improad(1, c) = SNOW_ALBEDO_NIR;
+          albsni_improad(0, c) = SNOW_ALBEDO_VIS;
+          albsni_improad(1, c) = SNOW_ALBEDO_NIR;
+
+          albsnd_perroad(0, c) = SNOW_ALBEDO_VIS;
+          albsnd_perroad(1, c) = SNOW_ALBEDO_NIR;
+          albsni_perroad(0, c) = SNOW_ALBEDO_VIS;
+          albsni_perroad(1, c) = SNOW_ALBEDO_NIR;
+        }
+      });
+}
+
 } // namespace URBANXX
