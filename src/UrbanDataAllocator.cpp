@@ -62,6 +62,7 @@ void RoadTypeAllocateViews(int N_LUN, int N_RAD, RoadType &road) {
   RADIATION_TYPE_ALLOCATE_VIEW(road.SnowAlbedo, Array2DR8, N_RAD, N_LUN);
   RADIATION_TYPE_ALLOCATE_VIEW(road.AlbedoWithSnowEffects, Array2DR8, N_RAD,
                                N_LUN);
+  RADIATION_TYPE_ALLOCATE_VIEW(road.BaseAlbedo, Array2DR8, N_RAD, N_LUN);
   RADIATION_TYPE_ALLOCATE_VIEW(road.ReflectedShortRad, Array2DR8, N_RAD, N_LUN);
   RADIATION_TYPE_ALLOCATE_VIEW(road.AbsorbedShortRad, Array2DR8, N_RAD, N_LUN);
 }
@@ -69,6 +70,7 @@ void RoadTypeAllocateViews(int N_LUN, int N_RAD, RoadType &road) {
 void WallTypeAllocateViews(int N_LUN, int N_RAD, WallType &wall) {
   RADIATION_TYPE_ALLOCATE_VIEW(wall.DownwellingShortRad, Array2DR8, N_RAD,
                                N_LUN);
+  RADIATION_TYPE_ALLOCATE_VIEW(wall.BaseAlbedo, Array2DR8, N_RAD, N_LUN);
   RADIATION_TYPE_ALLOCATE_VIEW(wall.ReflectedShortRad, Array2DR8, N_RAD, N_LUN);
   RADIATION_TYPE_ALLOCATE_VIEW(wall.AbsorbedShortRad, Array2DR8, N_RAD, N_LUN);
 }
@@ -77,6 +79,7 @@ void RoofTypeAllocateViews(int N_LUN, int N_RAD, RoofType &roof) {
   RADIATION_TYPE_ALLOCATE_VIEW(roof.SnowAlbedo, Array2DR8, N_RAD, N_LUN);
   RADIATION_TYPE_ALLOCATE_VIEW(roof.AlbedoWithSnowEffects, Array2DR8, N_RAD,
                                N_LUN);
+  RADIATION_TYPE_ALLOCATE_VIEW(roof.BaseAlbedo, Array2DR8, N_RAD, N_LUN);
   RADIATION_TYPE_ALLOCATE_VIEW(roof.ReflectedShortRad, Array2DR8, N_RAD, N_LUN);
   RADIATION_TYPE_ALLOCATE_VIEW(roof.AbsorbedShortRad, Array2DR8, N_RAD, N_LUN);
 }
@@ -97,6 +100,7 @@ void UrbanDataAllocator::allocate_all_views() const {
   CombinedRoadTypeAllocateViews(N_LUN, N_RAD, data_bundle.CombinedRoad);
   RoadTypeAllocateViews(N_LUN, N_RAD, data_bundle.ImperviousRoad);
   RoadTypeAllocateViews(N_LUN, N_RAD, data_bundle.PerviousRoad);
+  RoofTypeAllocateViews(N_LUN, N_RAD, data_bundle.Roof);
 
   printf("All primary Views successfully allocated on device.\n");
 }
@@ -148,6 +152,52 @@ void UrbanDataAllocator::initialize_canyon_geometry() const {
         sw(c) = 0.5 * (hwr + 1.0 - sqrt_term) / hwr; // eqn 2.24
         rw(c) = sw(c);                               // eqn 2.27
         ww(c) = 1.0 - sw(c) - wr(c);                 // eqn 2.28
+      });
+}
+
+void UrbanDataAllocator::initialize_properties() const {
+
+  int N_LUN = data_bundle.N_LUN;
+  int N_RAD = data_bundle.N_RAD;
+
+  const Real ALB_IMPROAD_DIR = 0.230000004172325;
+  const Real ALB_IMPROAD_DIF = ALB_IMPROAD_DIR;
+  const Real ALB_PERROAD_DIR = 0.0799999982118607;
+  const Real ALB_PERROAD_DIF = ALB_PERROAD_DIR;
+  const Real ALB_ROOF_DIR = 0.254999995231628;
+  const Real ALB_ROOF_DIF = ALB_ROOF_DIR;
+  const Real ALB_WALL_DIR = 0.200000002980232;
+  const Real ALB_WALL_DIF = ALB_WALL_DIR;
+
+  Kokkos::parallel_for(
+      "SetParameters", N_LUN, KOKKOS_LAMBDA(const int c) {
+        Array2DR8 alb_roof_dir = data_bundle.Roof.BaseAlbedo.dir;
+        Array2DR8 alb_roof_dif = data_bundle.Roof.BaseAlbedo.dif;
+        Array2DR8 alb_improad_dir = data_bundle.ImperviousRoad.BaseAlbedo.dir;
+        Array2DR8 alb_improad_dif = data_bundle.ImperviousRoad.BaseAlbedo.dif;
+        Array2DR8 alb_perroad_dir = data_bundle.PerviousRoad.BaseAlbedo.dir;
+        Array2DR8 alb_perroad_dif = data_bundle.PerviousRoad.BaseAlbedo.dif;
+        Array2DR8 alb_sunwall_dir = data_bundle.SunlitWall.BaseAlbedo.dir;
+        Array2DR8 alb_sunwall_dif = data_bundle.SunlitWall.BaseAlbedo.dif;
+        Array2DR8 alb_shdwall_dir = data_bundle.ShadedWall.BaseAlbedo.dir;
+        Array2DR8 alb_shdwall_dif = data_bundle.ShadedWall.BaseAlbedo.dif;
+
+        for (int ib = 0; ib < N_RAD; ib++) {
+          alb_roof_dir(ib, c) = ALB_ROOF_DIR;
+          alb_roof_dif(ib, c) = ALB_ROOF_DIF;
+
+          alb_improad_dir(ib, c) = ALB_IMPROAD_DIR;
+          alb_improad_dif(ib, c) = ALB_IMPROAD_DIF;
+
+          alb_perroad_dir(ib, c) = ALB_PERROAD_DIR;
+          alb_perroad_dif(ib, c) = ALB_PERROAD_DIF;
+
+          alb_sunwall_dir(ib, c) = ALB_WALL_DIR;
+          alb_sunwall_dif(ib, c) = ALB_WALL_DIF;
+
+          alb_shdwall_dir(ib, c) = ALB_WALL_DIR;
+          alb_shdwall_dif(ib, c) = ALB_WALL_DIF;
+        }
       });
 }
 

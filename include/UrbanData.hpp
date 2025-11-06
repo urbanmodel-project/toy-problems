@@ -57,6 +57,7 @@ struct RoadType {
   RadiationType<Array2DR8>
       ReflectedShortRad; // reflected solar radiation per unit ground area per
                          // unit incident flux
+  RadiationType<Array2DR8> BaseAlbedo; // albedo of road without snow
   RadiationType<Array2DR8>
       AbsorbedShortRad; // absorbed solar radiation per unit ground area per
                         // unit incident flux
@@ -68,6 +69,7 @@ struct WallType {
   RadiationType<Array2DR8>
       ReflectedShortRad; // reflected shortave radiation per unit wall area per
   // unit incident flux
+  RadiationType<Array2DR8> BaseAlbedo; // albedo of wall
   RadiationType<Array2DR8>
       AbsorbedShortRad; // absorbed shortwave radation per unit wall area per
                         // unit incident flux
@@ -80,6 +82,7 @@ struct RoofType {
   RadiationType<Array2DR8>
       ReflectedShortRad; // reflected solar radiation per unit ground area per
                          // unit incident flux
+  RadiationType<Array2DR8> BaseAlbedo; // albedo of roof without snow
   RadiationType<Array2DR8>
       AbsorbedShortRad; // absorbed solar radiation per unit ground area per
                         // unit incident flux

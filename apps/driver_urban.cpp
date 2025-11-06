@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
         UrbanDataAllocator allocator(simulation_bundle);
         allocator.allocate_all_views();
         allocator.initialize_canyon_geometry();
+        allocator.initialize_properties();
 
         UrbanAlbedo albedo_physics(simulation_bundle);
 

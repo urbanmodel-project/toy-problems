@@ -28,6 +28,7 @@ public:
   void allocate_all_views() const;
 
   void initialize_canyon_geometry() const;
+  void initialize_properties() const;
 
   // Optional: Methods for allocating specific sub-groups of views
   // void allocate_geometry() const;
