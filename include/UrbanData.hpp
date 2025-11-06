@@ -19,6 +19,7 @@ struct CanyonGeometryData {
   Array1DR8 ViewFactorSkyForWall;      // view factor of sky for one wall
   Array1DR8 ViewFactorRoadToWall;      // view factor from road to wall
   Array1DR8 ViewFactorWallToOtherWall; // view factor from wall to opposing wall
+  Array1DR8 ViewFactorWallToRoad;      // view factor of one wall to road
 };
 
 // --- Local Variables and Initial Inputs ---

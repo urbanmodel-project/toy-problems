@@ -27,6 +27,7 @@ void CanyonGeometryAllocateViews(int N_LUN, CanyonGeometryData &geometry) {
   ALLOCATE_VIEW(geometry.ViewFactorSkyForWall, Array1DR8, N_LUN);
   ALLOCATE_VIEW(geometry.ViewFactorRoadToWall, Array1DR8, N_LUN);
   ALLOCATE_VIEW(geometry.ViewFactorWallToOtherWall, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(geometry.ViewFactorWallToRoad, Array1DR8, N_LUN);
 
   printf("All CanopyGeomtry Views successfully allocated on device.\n");
 }
@@ -129,6 +130,25 @@ void UrbanDataAllocator::initialize_canyon_geometry() const {
 
   if (0)
     print_view_1d(CanyonHwr, "CanyonHwr");
+
+  Kokkos::parallel_for(
+      "ComputingViewFactors", N_LUN, KOKKOS_LAMBDA(const int c) {
+        Array1DR8 sr = data_bundle.geometry.ViewFactorSkyForRoad;
+        Array1DR8 sw = data_bundle.geometry.ViewFactorSkyForWall;
+        Array1DR8 rw = data_bundle.geometry.ViewFactorRoadToWall;
+        Array1DR8 ww = data_bundle.geometry.ViewFactorWallToOtherWall;
+        Array1DR8 wr = data_bundle.geometry.ViewFactorWallToRoad;
+
+        const Real hwr = data_bundle.geometry.CanyonHwr(c);
+
+        const Real sqrt_term = std::sqrt(hwr * hwr + 1.0);
+
+        sr(c) = sqrt_term - hwr;                     // eqn 2.25
+        wr(c) = 0.5 * (1.0 - sr(c));                 // eqn 2.27
+        sw(c) = 0.5 * (hwr + 1.0 - sqrt_term) / hwr; // eqn 2.24
+        rw(c) = sw(c);                               // eqn 2.27
+        ww(c) = 1.0 - sw(c) - wr(c);                 // eqn 2.28
+      });
 }
 
 } // namespace URBANXX

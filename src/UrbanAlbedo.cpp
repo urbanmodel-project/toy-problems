@@ -89,11 +89,13 @@ void UrbanAlbedo::compute_incident_radiation() const {
 
           for (int ib = 0; ib < N_RAD; ib++) {
             sdir_shadewall(ib, c) = 0.0; // eqn. 2.15
-            sdir_road(ib, c) = sdir[ib] * ( 2.0 * theta0OverPi -
-                               2.0 / rpi * hwr * tanzen * (1.0 - costheta0)); // eqn 2.17
-            sdir_sunlitwall(ib, c) = 2.0 * sdir[ib] *
-                                     ((1.0 / hwr) * (0.5 - theta0OverPi) +
-                                      (1.0 / rpi) * tanzen * (1.0 - costheta0)); // eqn. 2.16
+            sdir_road(ib, c) = sdir[ib] * (2.0 * theta0OverPi -
+                                           2.0 / rpi * hwr * tanzen *
+                                               (1.0 - costheta0)); // eqn 2.17
+            sdir_sunlitwall(ib, c) =
+                2.0 * sdir[ib] *
+                ((1.0 / hwr) * (0.5 - theta0OverPi) +
+                 (1.0 / rpi) * tanzen * (1.0 - costheta0)); // eqn. 2.16
           }
         }
       });
