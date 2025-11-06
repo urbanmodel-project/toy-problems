@@ -36,36 +36,63 @@ struct SolarInputData {
   Array1DR8 FracSnow;      // fraction of ground covered by snow
 };
 
-// --- Intermediate/Output Fluxes (Shared between subroutines) ---
-struct AlbedoFluxes {
-  // Incident Fluxes (Output of incident_direct/diffuse)
-  Array2DR8 SdirRoad;      // direct incident on road
-  Array2DR8 SdifRoad;      // diffuse incident on road
-  Array2DR8 SdirSunwall;   // direct incident on sunlit wall
-  Array2DR8 SdifSunwall;   // diffuse incident on sunlit wall
-  Array2DR8 SdirShadewall; // direct incident on shaded wall
-  Array2DR8 SdifShadewall; // diffuse incident on shaded wall
+template <typename ArrayType> struct RadiationType {
+  ArrayType dir;
+  ArrayType dif;
+};
 
-  // Snow-corrected albedos (Output of SnowAlbedo)
-  Array2DR8 alb_roof_dir_s;
-  Array2DR8 alb_improad_dir_s;
-  Array2DR8 alb_perroad_dir_s;
-  // ... diffuse versions omitted for brevity ...
+struct CombinedRoadType {
+  RadiationType<Array2DR8>
+      DownwellingShortRad; // downwelling shortwave radiation per unit road area
+  RadiationType<Array2DR8> SnowAlbedo; // snow albedo
+  RadiationType<Array2DR8>
+      AlbedoWithSnowEffects; // albedo of road including snow effects
+};
 
-  // Absorbed Fluxes (Output of net_solar) (solarabs_vars)
-  Array2DR8 sabs_improad_dir; // direct solar absorbed by impervious road
-  Array2DR8 sabsSunwall_dir;  // direct solar absorbed by sunwall
+struct RoadType {
+  RadiationType<Array2DR8> SnowAlbedo; // snow albedo
+  RadiationType<Array2DR8>
+      AlbedoWithSnowEffects; // albedo of road including snow effects
+  RadiationType<Array2DR8>
+      ReflectedShortRad; // reflected solar radiation per unit ground area per
+                         // unit incident flux
+  RadiationType<Array2DR8>
+      AbsorbedShortRad; // absorbed solar radiation per unit ground area per
+                        // unit incident flux
+};
 
-  // Reflected Fluxes (Output of net_solar) (Local sref_... variables)
-  Array2DR8 sref_roof_dir;   // direct solar reflected by roof (sref_roof_dir)
-  Array2DR8 srefSunwall_dir; // direct solar reflected by sunwall
+struct WallType {
+  RadiationType<Array2DR8>
+      DownwellingShortRad; // downwelling shortwave radiation per unit wall area
+  RadiationType<Array2DR8>
+      ReflectedShortRad; // reflected shortave radiation per unit wall area per
+  // unit incident flux
+  RadiationType<Array2DR8>
+      AbsorbedShortRad; // absorbed shortwave radation per unit wall area per
+                        // unit incident flux
+};
+
+struct RoofType {
+  RadiationType<Array2DR8> SnowAlbedo; // snow albedo
+  RadiationType<Array2DR8>
+      AlbedoWithSnowEffects; // albedo of roof including snow effects
+  RadiationType<Array2DR8>
+      ReflectedShortRad; // reflected solar radiation per unit ground area per
+                         // unit incident flux
 };
 
 // --- The Master Bundle passed between all classes ---
 struct UrbanSharedDataBundle {
   CanyonGeometryData geometry;
   SolarInputData input;
-  AlbedoFluxes fluxes;
+
+  RoofType Roof;
+  WallType SunlitWall;
+  WallType ShadedWall;
+  RoadType ImperviousRoad;
+  RoadType PerviousRoad;
+  CombinedRoadType CombinedRoad;
+
   const int N_LUN;
   const int N_RAD;
 };

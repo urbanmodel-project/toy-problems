@@ -42,10 +42,8 @@ void SolarInputDataAllocateViews(int N_LUN, int N_RAD, SolarInputData &solar) {
   printf("All SolarInputData Views successfully allocated on device.\n");
 }
 
-void AlbedoFluxesAllocateViews(int N_LUN, int N_RAD, AlbedoFluxes &)
-
-    // Method Definition: Contains the heavy lifting of allocation
-    void UrbanDataAllocator::allocate_all_views() const {
+// Method Definition: Contains the heavy lifting of allocation
+void UrbanDataAllocator::allocate_all_views() const {
   int N_LUN = data_bundle.N_LUN;
   int N_RAD = data_bundle.N_RAD;
 
@@ -54,10 +52,6 @@ void AlbedoFluxesAllocateViews(int N_LUN, int N_RAD, AlbedoFluxes &)
 
   CanyonGeometryAllocateViews(N_LUN, data_bundle.geometry);
   SolarInputDataAllocateViews(N_LUN, N_RAD, data_bundle.input);
-
-  // --- AlbedoFluxes Allocation ---
-  data_bundle.fluxes.SdirRoad = Array2DR8("SdirRoad", N_LUN, N_RAD);
-  // ... all other flux views ...
 
   printf("All primary Views successfully allocated on device.\n");
 }
