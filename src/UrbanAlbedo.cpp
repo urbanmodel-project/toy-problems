@@ -68,9 +68,19 @@ void UrbanAlbedo::compute_incident_radiation() const {
 
         Array2DR8 sdir_sunlitwall =
             data_bundle.SunlitWall.DownwellingShortRad.dir;
+        Array2DR8 sdif_sunlitwall =
+            data_bundle.SunlitWall.DownwellingShortRad.dif;
+
         Array2DR8 sdir_shadewall =
             data_bundle.ShadedWall.DownwellingShortRad.dir;
+        Array2DR8 sdif_shadewall =
+            data_bundle.ShadedWall.DownwellingShortRad.dif;
+
         Array2DR8 sdir_road = data_bundle.CombinedRoad.DownwellingShortRad.dir;
+        Array2DR8 sdif_road = data_bundle.CombinedRoad.DownwellingShortRad.dif;
+
+        Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyForRoad;
+        Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyForWall;
 
         // the incident direct and diffuse radiation for VIS and NIR bands is
         // assumed to be unity
@@ -88,6 +98,7 @@ void UrbanAlbedo::compute_incident_radiation() const {
           const Real theta0OverPi = theta0 / rpi;
 
           for (int ib = 0; ib < N_RAD; ib++) {
+            // director radiation
             sdir_shadewall(ib, c) = 0.0; // eqn. 2.15
             sdir_road(ib, c) = sdir[ib] * (2.0 * theta0OverPi -
                                            2.0 / rpi * hwr * tanzen *
@@ -96,6 +107,11 @@ void UrbanAlbedo::compute_incident_radiation() const {
                 2.0 * sdir[ib] *
                 ((1.0 / hwr) * (0.5 - theta0OverPi) +
                  (1.0 / rpi) * tanzen * (1.0 - costheta0)); // eqn. 2.16
+
+            // diffuse radiation
+            sdif_road(ib, c) = sdif[ib] * vf_sr(c);       // eqn 2.30
+            sdif_sunlitwall(ib, c) = sdif[ib] * vf_sw(c); // eqn 2.32
+            sdif_shadewall(ib, c) = sdif[ib] * vf_sw(c);  // eqn 2.31
           }
         }
       });
@@ -104,6 +120,10 @@ void UrbanAlbedo::compute_incident_radiation() const {
     print_view_2d(data_bundle.ShadedWall.DownwellingShortRad.dir);
     print_view_2d(data_bundle.SunlitWall.DownwellingShortRad.dir);
     print_view_2d(data_bundle.CombinedRoad.DownwellingShortRad.dir);
+
+    print_view_2d(data_bundle.ShadedWall.DownwellingShortRad.dif);
+    print_view_2d(data_bundle.SunlitWall.DownwellingShortRad.dif);
+    print_view_2d(data_bundle.CombinedRoad.DownwellingShortRad.dif);
   }
 }
 
