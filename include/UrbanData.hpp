@@ -12,7 +12,7 @@ using ExecutionSpace = Kokkos::DefaultExecutionSpace;
 
 // --- Fortran Type: urbanparams_vars and Canyon Geometry ---
 struct CanyonGeometryData {
-  HostArray1DI4 CanyonHwrH; // ratio of building height to street width
+  HostArray1DR8 CanyonHwrH; // ratio of building height to street width
   Array1DR8 CanyonHwr;      // ratio of building height to street width
 
   Array1DR8 ViewFactorSkyForRoad;      // view factor of sky for road
