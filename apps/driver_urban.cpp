@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
             albedo_physics.set_solar_inputs();
             albedo_physics.compute_incident_radiation();
             albedo_physics.compute_snow_albedo();
+            albedo_physics.compute_combined_albedo();
         }
 
     }

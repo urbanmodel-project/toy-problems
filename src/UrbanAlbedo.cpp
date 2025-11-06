@@ -140,8 +140,8 @@ void UrbanAlbedo::compute_snow_albedo() const {
       "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
         const Real coszen = data_bundle.input.Coszen(c);
 
-        Array2DR8 albsnd_roof = data_bundle.CombinedRoad.SnowAlbedo.dir;
-        Array2DR8 albsni_roof = data_bundle.CombinedRoad.SnowAlbedo.dif;
+        Array2DR8 albsnd_roof = data_bundle.Roof.SnowAlbedo.dir;
+        Array2DR8 albsni_roof = data_bundle.Roof.SnowAlbedo.dif;
 
         Array2DR8 albsnd_improad = data_bundle.ImperviousRoad.SnowAlbedo.dir;
         Array2DR8 albsni_improad = data_bundle.ImperviousRoad.SnowAlbedo.dif;
@@ -166,6 +166,75 @@ void UrbanAlbedo::compute_snow_albedo() const {
           albsni_perroad(1, c) = SNOW_ALBEDO_NIR;
         }
       });
+}
+
+void UrbanAlbedo::compute_combined_albedo() const {
+  std::cout << "In compute_combined_albedo\n";
+
+  const Real rpi = M_PI;
+  const Real SNOW_ALBEDO_VIS = 0.66;
+  const Real SNOW_ALBEDO_NIR = 0.56;
+
+  int N_LUN = data_bundle.N_LUN;
+  int N_RAD = data_bundle.N_RAD;
+  Kokkos::parallel_for(
+      "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
+        const Real coszen = data_bundle.input.Coszen(c);
+
+        Array2DR8 albsnd_roof = data_bundle.Roof.SnowAlbedo.dir;
+        Array2DR8 albsni_roof = data_bundle.Roof.SnowAlbedo.dif;
+        Array2DR8 alb_roof_dir = data_bundle.Roof.BaseAlbedo.dir;
+        Array2DR8 alb_roof_dif = data_bundle.Roof.BaseAlbedo.dif;
+        Array2DR8 alb_roof_dir_s = data_bundle.Roof.AlbedoWithSnowEffects.dir;
+        Array2DR8 alb_roof_dif_s = data_bundle.Roof.AlbedoWithSnowEffects.dif;
+
+        Array2DR8 albsnd_improad = data_bundle.ImperviousRoad.SnowAlbedo.dir;
+        Array2DR8 albsni_improad = data_bundle.ImperviousRoad.SnowAlbedo.dif;
+        Array2DR8 alb_improad_dir = data_bundle.ImperviousRoad.BaseAlbedo.dir;
+        Array2DR8 alb_improad_dif = data_bundle.ImperviousRoad.BaseAlbedo.dif;
+        Array2DR8 alb_improad_dir_s =
+            data_bundle.ImperviousRoad.AlbedoWithSnowEffects.dir;
+        Array2DR8 alb_improad_dif_s =
+            data_bundle.ImperviousRoad.AlbedoWithSnowEffects.dif;
+
+        Array2DR8 albsnd_perroad = data_bundle.PerviousRoad.SnowAlbedo.dir;
+        Array2DR8 albsni_perroad = data_bundle.PerviousRoad.SnowAlbedo.dif;
+        Array2DR8 alb_perroad_dir = data_bundle.PerviousRoad.BaseAlbedo.dir;
+        Array2DR8 alb_perroad_dif = data_bundle.PerviousRoad.BaseAlbedo.dif;
+        Array2DR8 alb_perroad_dir_s =
+            data_bundle.PerviousRoad.AlbedoWithSnowEffects.dir;
+        Array2DR8 alb_perroad_dif_s =
+            data_bundle.PerviousRoad.AlbedoWithSnowEffects.dif;
+
+        const Real frac_sno = 0.0;
+
+        for (int ib = 0; ib < N_RAD; ib++) {
+          alb_roof_dir_s(ib, c) = alb_roof_dir(ib, c) * (1.0 - frac_sno) +
+                                  albsnd_roof(ib, c) * frac_sno;
+          alb_roof_dif_s(ib, c) = alb_roof_dif(ib, c) * (1.0 - frac_sno) +
+                                  albsni_roof(ib, c) * frac_sno;
+
+          alb_improad_dir_s(ib, c) = alb_improad_dir(ib, c) * (1.0 - frac_sno) +
+                                     albsnd_improad(ib, c) * frac_sno;
+          alb_improad_dif_s(ib, c) = alb_improad_dir(ib, c) * (1.0 - frac_sno) +
+                                     albsni_improad(ib, c) * frac_sno;
+
+          alb_perroad_dir_s(ib, c) = alb_perroad_dir(ib, c) * (1.0 - frac_sno) +
+                                     albsnd_perroad(ib, c) * frac_sno;
+          alb_perroad_dif_s(ib, c) = alb_perroad_dir(ib, c) * (1.0 - frac_sno) +
+                                     albsni_perroad(ib, c) * frac_sno;
+        }
+      });
+
+  if (0) {
+    print_view_2d(data_bundle.Roof.AlbedoWithSnowEffects.dir);
+    print_view_2d(data_bundle.ImperviousRoad.AlbedoWithSnowEffects.dir);
+    print_view_2d(data_bundle.PerviousRoad.AlbedoWithSnowEffects.dir);
+
+    print_view_2d(data_bundle.Roof.AlbedoWithSnowEffects.dif);
+    print_view_2d(data_bundle.ImperviousRoad.AlbedoWithSnowEffects.dif);
+    print_view_2d(data_bundle.PerviousRoad.AlbedoWithSnowEffects.dif);
+  }
 }
 
 } // namespace URBANXX
