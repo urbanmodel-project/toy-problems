@@ -79,6 +79,9 @@ struct RoofType {
   RadiationType<Array2DR8>
       ReflectedShortRad; // reflected solar radiation per unit ground area per
                          // unit incident flux
+  RadiationType<Array2DR8>
+      AbsorbedShortRad; // absorbed solar radiation per unit ground area per
+                        // unit incident flux
 };
 
 // --- The Master Bundle passed between all classes ---
