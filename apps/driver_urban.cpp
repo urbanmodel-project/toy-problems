@@ -2,6 +2,7 @@
 #include <Kokkos_Core.hpp>
 #include <UrbanData.hpp>
 #include <UrbanDataAllocator.hpp>
+#include <UrbanAlbedo.hpp>
 #include <iostream>
 
 using namespace URBANXX;
@@ -39,6 +40,14 @@ int main(int argc, char* argv[]) {
         UrbanDataAllocator allocator(simulation_bundle);
         allocator.allocate_all_views();
         allocator.initialize_canyon_geometry();
+
+        UrbanAlbedo albedo_physics(simulation_bundle);
+
+        if (1) {
+            albedo_physics.set_solar_inputs();
+            albedo_physics.compute_incident_radiation();
+        }
+
     }
         
     }

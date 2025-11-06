@@ -33,7 +33,7 @@ void CanyonGeometryAllocateViews(int N_LUN, CanyonGeometryData &geometry) {
 
 void SolarInputDataAllocateViews(int N_LUN, int N_RAD, SolarInputData &solar) {
 
-  ALLOCATE_VIEW(solar.Coszen, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(solar.CoszenH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(solar.Coszen, Array1DR8, N_LUN);
 
   ALLOCATE_VIEW(solar.SdirHorizH, HostArray2DR8, N_RAD, N_LUN);

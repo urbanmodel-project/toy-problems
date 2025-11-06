@@ -1,7 +1,9 @@
 add_executable(driver_vector_add driver_vector_add.cpp)
 add_executable(driver_urban 
   driver_urban.cpp
-  ../src/UrbanDataAllocator.cpp)
+  ../src/UrbanDataAllocator.cpp
+  ../src/UrbanAlbedo.cpp
+  )
 
 target_link_libraries(driver_vector_add
   PRIVATE
