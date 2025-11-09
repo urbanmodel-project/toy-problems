@@ -11,9 +11,10 @@ private:
   Array1DR8 Hwr;
   Array1DR8 ViewFactorSkyFromRoad;
   Array1DR8 ViewFactorWallFromRoad;
+  RoadDataType RoadData;
 
 public:
-  NetSolarRoad(CanyonGeometryData *geometry);
+  NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData);
 };
 
 class NetSolarWall {
@@ -22,9 +23,10 @@ private:
   Array1DR8 ViewFactorSkyFromWall;
   Array1DR8 ViewFactorRoadFromWall;
   Array1DR8 ViewFactorOtherWallFromWall;
+  WallDataType WallData;
 
 public:
-  NetSolarWall(CanyonGeometryData *geometry);
+  NetSolarWall(CanyonGeometryData *geometry, WallDataType &wallData);
 };
 
 class UrbanAlbedo {

@@ -7,22 +7,25 @@
 
 namespace URBANXX {
 
-NetSolarRoad::NetSolarRoad(CanyonGeometryData *geometry)
+NetSolarRoad::NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData)
     : Hwr(geometry->CanyonHwr),
       ViewFactorSkyFromRoad(geometry->ViewFactorSkyFromRoad),
-      ViewFactorWallFromRoad(geometry->ViewFactorWallFromRoad) {}
+      ViewFactorWallFromRoad(geometry->ViewFactorWallFromRoad),
+      RoadData(roadData) {}
 
-NetSolarWall::NetSolarWall(CanyonGeometryData *geometry)
+NetSolarWall::NetSolarWall(CanyonGeometryData *geometry, WallDataType &wallData)
     : Hwr(geometry->CanyonHwr),
       ViewFactorSkyFromWall(geometry->ViewFactorSkyFromWall),
       ViewFactorRoadFromWall(geometry->ViewFactorRoadFromWall),
-      ViewFactorOtherWallFromWall(geometry->ViewFactorOtherWallFromWall) {}
+      ViewFactorOtherWallFromWall(geometry->ViewFactorOtherWallFromWall),
+      WallData(wallData) {}
 
 UrbanAlbedo::UrbanAlbedo(UrbanSharedDataBundle &bundle)
-    : data_bundle(bundle), SunlitWallNetSolar(&bundle.geometry),
-      ShadeWallNetSolar(&bundle.geometry),
-      ImperviousRoadNetSolar(&bundle.geometry),
-      PerviousRoadNetSolar(&bundle.geometry) {}
+    : data_bundle(bundle),
+      SunlitWallNetSolar(&bundle.geometry, bundle.SunlitWall),
+      ShadeWallNetSolar(&bundle.geometry, bundle.ShadedWall),
+      ImperviousRoadNetSolar(&bundle.geometry, bundle.ImperviousRoad),
+      PerviousRoadNetSolar(&bundle.geometry, bundle.PerviousRoad) {}
 
 template <typename ViewType>
 void print_view_1d(const ViewType &view, const std::string &name = "") {
