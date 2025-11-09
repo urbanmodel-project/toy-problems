@@ -23,11 +23,11 @@ void CanyonGeometryAllocateViews(int N_LUN, CanyonGeometryData &geometry) {
   ALLOCATE_VIEW(geometry.CanyonHwrH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(geometry.CanyonHwr, Array1DR8, N_LUN);
 
-  ALLOCATE_VIEW(geometry.ViewFactorSkyForRoad, Array1DR8, N_LUN);
-  ALLOCATE_VIEW(geometry.ViewFactorSkyForWall, Array1DR8, N_LUN);
-  ALLOCATE_VIEW(geometry.ViewFactorRoadToWall, Array1DR8, N_LUN);
-  ALLOCATE_VIEW(geometry.ViewFactorWallToOtherWall, Array1DR8, N_LUN);
-  ALLOCATE_VIEW(geometry.ViewFactorWallToRoad, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(geometry.ViewFactorSkyFromRoad, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(geometry.ViewFactorSkyFromWall, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(geometry.ViewFactorRoadFromWall, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(geometry.ViewFactorOtherWallFromWall, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(geometry.ViewFactorWallFromRoad, Array1DR8, N_LUN);
 
   printf("All CanopyGeomtry Views successfully allocated on device.\n");
 }
@@ -137,11 +137,11 @@ void UrbanDataAllocator::initialize_canyon_geometry() const {
 
   Kokkos::parallel_for(
       "ComputingViewFactors", N_LUN, KOKKOS_LAMBDA(const int c) {
-        Array1DR8 sr = data_bundle.geometry.ViewFactorSkyForRoad;
-        Array1DR8 sw = data_bundle.geometry.ViewFactorSkyForWall;
-        Array1DR8 rw = data_bundle.geometry.ViewFactorRoadToWall;
-        Array1DR8 ww = data_bundle.geometry.ViewFactorWallToOtherWall;
-        Array1DR8 wr = data_bundle.geometry.ViewFactorWallToRoad;
+        Array1DR8 sr = data_bundle.geometry.ViewFactorSkyFromRoad;
+        Array1DR8 sw = data_bundle.geometry.ViewFactorSkyFromWall;
+        Array1DR8 rw = data_bundle.geometry.ViewFactorRoadFromWall;
+        Array1DR8 ww = data_bundle.geometry.ViewFactorOtherWallFromWall;
+        Array1DR8 wr = data_bundle.geometry.ViewFactorWallFromRoad;
 
         const Real hwr = data_bundle.geometry.CanyonHwr(c);
 

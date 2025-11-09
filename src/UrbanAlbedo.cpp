@@ -79,8 +79,8 @@ void UrbanAlbedo::compute_incident_radiation() const {
         Array2DR8 sdir_road = data_bundle.CombinedRoad.DownwellingShortRad.dir;
         Array2DR8 sdif_road = data_bundle.CombinedRoad.DownwellingShortRad.dif;
 
-        Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyForRoad;
-        Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyForWall;
+        Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyFromRoad;
+        Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyFromWall;
 
         // the incident direct and diffuse radiation for VIS and NIR bands is
         // assumed to be unity
@@ -251,11 +251,11 @@ void UrbanAlbedo::compute_net_solar() const {
           Array2DR8 sdir_road =
               data_bundle.CombinedRoad.DownwellingShortRad.dir;
 
-          Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyForRoad;
-          Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyForWall;
-          Array1DR8 vf_wr = data_bundle.geometry.ViewFactorWallToRoad;
-          Array1DR8 vf_rw = data_bundle.geometry.ViewFactorRoadToWall;
-          Array1DR8 vf_ww = data_bundle.geometry.ViewFactorWallToOtherWall;
+          Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyFromRoad;
+          Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyFromWall;
+          Array1DR8 vf_wr = data_bundle.geometry.ViewFactorWallFromRoad;
+          Array1DR8 vf_rw = data_bundle.geometry.ViewFactorRoadFromWall;
+          Array1DR8 vf_ww = data_bundle.geometry.ViewFactorOtherWallFromWall;
 
           Array2DR8 alb_improad_dir = data_bundle.ImperviousRoad.BaseAlbedo.dir;
           Array2DR8 alb_perroad_dir = data_bundle.PerviousRoad.BaseAlbedo.dir;

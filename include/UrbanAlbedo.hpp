@@ -6,7 +6,6 @@
 #include <UrbanData.hpp>
 
 namespace URBANXX {
-
 class UrbanAlbedo {
 private:
   UrbanSharedDataBundle &data_bundle;

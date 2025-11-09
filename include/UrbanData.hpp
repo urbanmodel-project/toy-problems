@@ -15,11 +15,11 @@ struct CanyonGeometryData {
   HostArray1DR8 CanyonHwrH; // ratio of building height to street width
   Array1DR8 CanyonHwr;      // ratio of building height to street width
 
-  Array1DR8 ViewFactorSkyForRoad;      // view factor of sky for road
-  Array1DR8 ViewFactorSkyForWall;      // view factor of sky for one wall
-  Array1DR8 ViewFactorRoadToWall;      // view factor from road to wall
-  Array1DR8 ViewFactorWallToOtherWall; // view factor from wall to opposing wall
-  Array1DR8 ViewFactorWallToRoad;      // view factor of one wall to road
+  Array1DR8 ViewFactorSkyFromRoad;      // view factor of sky for road
+  Array1DR8 ViewFactorSkyFromWall;      // view factor of sky for one wall
+  Array1DR8 ViewFactorRoadFromWall;      // view factor from road to wall
+  Array1DR8 ViewFactorOtherWallFromWall; // view factor from wall to opposing wall
+  Array1DR8 ViewFactorWallFromRoad;      // view factor of one wall to road
 };
 
 // --- Local Variables and Initial Inputs ---
