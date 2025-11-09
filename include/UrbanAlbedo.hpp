@@ -6,9 +6,34 @@
 #include <UrbanData.hpp>
 
 namespace URBANXX {
+class NetSolarRoad {
+private:
+  Array1DR8 Hwr;
+  Array1DR8 ViewFactorSkyFromRoad;
+  Array1DR8 ViewFactorWallFromRoad;
+
+public:
+  NetSolarRoad(CanyonGeometryData *geometry);
+};
+
+class NetSolarWall {
+private:
+  Array1DR8 Hwr;
+  Array1DR8 ViewFactorSkyFromWall;
+  Array1DR8 ViewFactorRoadFromWall;
+  Array1DR8 ViewFactorOtherWallFromWall;
+
+public:
+  NetSolarWall(CanyonGeometryData *geometry);
+};
+
 class UrbanAlbedo {
 private:
   UrbanSharedDataBundle &data_bundle;
+  NetSolarWall SunlitWallNetSolar;
+  NetSolarWall ShadeWallNetSolar;
+  NetSolarRoad ImperviousRoadNetSolar;
+  NetSolarRoad PerviousRoadNetSolar;
 
 public:
   UrbanAlbedo(UrbanSharedDataBundle &bundle);

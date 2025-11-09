@@ -7,7 +7,22 @@
 
 namespace URBANXX {
 
-UrbanAlbedo::UrbanAlbedo(UrbanSharedDataBundle &bundle) : data_bundle(bundle) {}
+NetSolarRoad::NetSolarRoad(CanyonGeometryData *geometry)
+    : Hwr(geometry->CanyonHwr),
+      ViewFactorSkyFromRoad(geometry->ViewFactorSkyFromRoad),
+      ViewFactorWallFromRoad(geometry->ViewFactorWallFromRoad) {}
+
+NetSolarWall::NetSolarWall(CanyonGeometryData *geometry)
+    : Hwr(geometry->CanyonHwr),
+      ViewFactorSkyFromWall(geometry->ViewFactorSkyFromWall),
+      ViewFactorRoadFromWall(geometry->ViewFactorRoadFromWall),
+      ViewFactorOtherWallFromWall(geometry->ViewFactorOtherWallFromWall) {}
+
+UrbanAlbedo::UrbanAlbedo(UrbanSharedDataBundle &bundle)
+    : data_bundle(bundle), SunlitWallNetSolar(&bundle.geometry),
+      ShadeWallNetSolar(&bundle.geometry),
+      ImperviousRoadNetSolar(&bundle.geometry),
+      PerviousRoadNetSolar(&bundle.geometry) {}
 
 template <typename ViewType>
 void print_view_1d(const ViewType &view, const std::string &name = "") {
@@ -262,7 +277,7 @@ void UrbanAlbedo::compute_net_solar() const {
 
           Array2DR8 alb_sunwall_dir = data_bundle.SunlitWall.BaseAlbedo.dir;
           Array2DR8 alb_sunwall_dif = data_bundle.SunlitWall.BaseAlbedo.dif;
-  
+
           Array2DR8 alb_shdwall_dir = data_bundle.ShadedWall.BaseAlbedo.dir;
           Array2DR8 alb_shdwall_dif = data_bundle.ShadedWall.BaseAlbedo.dif;
 
