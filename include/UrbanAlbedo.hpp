@@ -18,6 +18,7 @@ public:
   void compute_incident_radiation() const;
   void compute_snow_albedo() const;
   void compute_combined_albedo() const;
+  void compute_net_solar() const;
 };
 } // namespace URBANXX
 

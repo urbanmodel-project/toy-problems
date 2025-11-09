@@ -237,4 +237,93 @@ void UrbanAlbedo::compute_combined_albedo() const {
   }
 }
 
+void UrbanAlbedo::compute_net_solar() const {
+  std::cout << "In compute_net_solar\n";
+
+  int N_LUN = data_bundle.N_LUN;
+  int N_RAD = data_bundle.N_RAD;
+
+  Kokkos::parallel_for(
+      "ComputeNetSolar", N_LUN, KOKKOS_LAMBDA(const int c) {
+        const Real coszen = data_bundle.input.Coszen(c);
+        if (coszen > 0) {
+
+          Array2DR8 sdir_road =
+              data_bundle.CombinedRoad.DownwellingShortRad.dir;
+
+          Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyForRoad;
+          Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyForWall;
+          Array1DR8 vf_wr = data_bundle.geometry.ViewFactorWallToRoad;
+          Array1DR8 vf_rw = data_bundle.geometry.ViewFactorRoadToWall;
+          Array1DR8 vf_ww = data_bundle.geometry.ViewFactorWallToOtherWall;
+
+          Array2DR8 alb_improad_dir = data_bundle.ImperviousRoad.BaseAlbedo.dir;
+          Array2DR8 alb_perroad_dir = data_bundle.PerviousRoad.BaseAlbedo.dir;
+
+          Array2DR8 alb_sunwall_dir = data_bundle.SunlitWall.BaseAlbedo.dir;
+          Array2DR8 alb_sunwall_dif = data_bundle.SunlitWall.BaseAlbedo.dif;
+  
+          Array2DR8 alb_shdwall_dir = data_bundle.ShadedWall.BaseAlbedo.dir;
+          Array2DR8 alb_shdwall_dif = data_bundle.ShadedWall.BaseAlbedo.dif;
+
+          const Real WTROAD_PERV = 0.16666667163372040;
+          const Real WTROAD_IMPERV = 1.0 - WTROAD_PERV;
+
+          for (int ib = 0; ib < N_RAD; ib++) {
+            Real road_a_dir = 0.0;
+            Real road_r_dir = 0.0;
+
+            // impervious road
+            Real improad_a_dir =
+                (1.0 - alb_improad_dir(ib, c)) * sdir_road(ib, c); // eq 2.38
+            Real improad_r_dir =
+                alb_improad_dir(ib, c) * sdir_road(ib, c);           // eq 2.43
+            Real improad_r_sky_dir = improad_r_dir * vf_sr(c);       // eq 2.48
+            Real improad_r_sunwall_dir = improad_r_dir * vf_wr(c);   // eq 2.49
+            Real improad_r_shadewall_dir = improad_r_dir * vf_wr(c); // eq 2.50
+            road_a_dir = road_a_dir + improad_a_dir * WTROAD_IMPERV;
+            road_r_dir = road_r_dir + improad_r_dir * WTROAD_IMPERV;
+
+            // pervious road
+            Real pervroad_a_dir =
+                (1.0 - alb_perroad_dir(ib, c)) * sdir_road(ib, c); // eq 2.39
+            Real pervroad_r_dir =
+                alb_perroad_dir(ib, c) * sdir_road(ib, c);            // eq 2.44
+            Real perroad_r_sky_dir = pervroad_r_dir * vf_sr(c);       // eq 2.51
+            Real perroad_r_sunwall_dir = pervroad_r_dir * vf_wr(c);   // eq 2.52
+            Real perroad_r_shadewall_dir = pervroad_r_dir * vf_wr(c); // eq 2.53
+            road_a_dir = road_a_dir + pervroad_a_dir * WTROAD_PERV;
+            road_r_dir = road_r_dir + pervroad_r_dir * WTROAD_PERV;
+
+            Real road_r_sky_dir = road_r_dir * vf_sr(c);       // eq 2.54
+            Real road_r_sunwall_dir = road_r_dir * vf_wr(c);   // eq 2.55
+            Real road_r_shadewall_dir = road_r_dir * vf_wr(c); // eq 2.56
+
+            // sunwall
+            Real sunwall_a_dir =
+                (1.0 - alb_sunwall_dir(ib, c)) * sdir_road(ib, c); // eq 2.40
+            Real sunwall_r_dir =
+                alb_sunwall_dir(ib, c) * sdir_road(ib, c);           // eq 2.46
+            Real sunwall_r_sky_dir = sunwall_r_dir * vf_sw(c);       // eq 2.57
+            Real sunwall_r_road_dir = sunwall_r_dir * vf_rw(c);      // eq 2.58
+            Real sunwall_r_shadewall_dir = sunwall_r_dir * vf_ww(c); // eq 2.59
+
+            // shaded wall
+            Real shdwall_a_dir =
+                (1.0 - alb_shdwall_dir(ib, c)) * sdir_road(ib, c); // eq 2.41
+            Real shdwall_r_dir =
+                alb_shdwall_dir(ib, c) * sdir_road(ib, c);           // eq 2.47
+            Real shdwall_r_sky_dir = shdwall_r_dir * vf_sw(c);       // eq 2.60
+            Real shdwall_r_road_dir = shdwall_r_dir * vf_rw(c);      // eq 2.61
+            Real shdwall_r_shadewall_dir = shdwall_r_dir * vf_ww(c); // eq 2.62
+          }
+        } else {
+        }
+      });
+
+  if (0) {
+    print_view_2d(data_bundle.Roof.AlbedoWithSnowEffects.dir);
+  }
+}
+
 } // namespace URBANXX
