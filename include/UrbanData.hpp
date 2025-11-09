@@ -43,7 +43,7 @@ template <typename ArrayType> struct RadiationType {
   ArrayType dif;
 };
 
-struct CombinedRoadType {
+struct CombinedRoadDataType {
   RadiationType<Array2DR8>
       DownwellingShortRad; // downwelling shortwave radiation per unit road area
   RadiationType<Array2DR8> SnowAlbedo; // snow albedo
@@ -51,7 +51,7 @@ struct CombinedRoadType {
       AlbedoWithSnowEffects; // albedo of road including snow effects
 };
 
-struct RoadType {
+struct RoadDataType {
   RadiationType<Array2DR8> SnowAlbedo; // snow albedo
   RadiationType<Array2DR8>
       AlbedoWithSnowEffects; // albedo of road including snow effects
@@ -64,7 +64,7 @@ struct RoadType {
                         // unit incident flux
 };
 
-struct WallType {
+struct WallDataType {
   RadiationType<Array2DR8>
       DownwellingShortRad; // downwelling shortwave radiation per unit wall area
   RadiationType<Array2DR8>
@@ -76,7 +76,7 @@ struct WallType {
                         // unit incident flux
 };
 
-struct RoofType {
+struct RoofDataType {
   RadiationType<Array2DR8> SnowAlbedo; // snow albedo
   RadiationType<Array2DR8>
       AlbedoWithSnowEffects; // albedo of roof including snow effects
@@ -94,12 +94,12 @@ struct UrbanSharedDataBundle {
   CanyonGeometryData geometry;
   SolarInputData input;
 
-  RoofType Roof;
-  WallType SunlitWall;
-  WallType ShadedWall;
-  RoadType ImperviousRoad;
-  RoadType PerviousRoad;
-  CombinedRoadType CombinedRoad;
+  RoofDataType Roof;
+  WallDataType SunlitWall;
+  WallDataType ShadedWall;
+  RoadDataType ImperviousRoad;
+  RoadDataType PerviousRoad;
+  CombinedRoadDataType CombinedRoad;
 
   const int N_LUN;
   const int N_RAD;
