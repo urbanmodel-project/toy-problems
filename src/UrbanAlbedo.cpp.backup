@@ -31,8 +31,33 @@ UrbanAlbedo::UrbanAlbedo(UrbanSharedDataBundle &bundle)
                            0.16666667163372040) {}
 
 void NetSolarRoad::ComputeAbsAndRefRad(int c, int ib, Real InRad, Real *AbsRad,
-                                       Real *RefRad,
-                                       bool scale_by_weight) const {
+                                       Real *AbsRadByWeight, Real *RefRad,
+                                       Real *RefRadByWeight, Real *RefRadToSky,
+                                       Real *RefRadToSunWall,
+                                       Real *RefRadToShadeWall,
+                                       Real *RefRadToSunWallByWeight,
+                                       Real *RefRadToShadeWallByWeight) const {
+
+  Real albedo = RoadData.BaseAlbedo.dir(ib, c);
+  Real vf_sr = ViewFactorSkyFromRoad(c);
+  Real vf_wr = ViewFactorWallFromRoad(c);
+
+  *AbsRad = (1.0 - albedo) * InRad;
+  *AbsRadByWeight = (*AbsRad) * Weight;
+
+  *RefRad = albedo * InRad;
+  *RefRadByWeight = (*RefRad) * Weight;
+
+  *RefRadToSky = (*RefRad) * vf_sr;
+  *RefRadToSunWall = (*RefRad) * vf_wr;
+  *RefRadToShadeWall = (*RefRad) * vf_wr;
+  *RefRadToSunWallByWeight = (*RefRad) * vf_wr * Weight;
+  *RefRadToShadeWallByWeight = (*RefRad) * vf_wr * Weight;
+}
+
+void NetSolarRoad::ComputeAbsAndRefRad(int c, int ib, Real InRad,
+                                         Real *AbsRad, Real *RefRad,
+                                         bool scale_by_weight) const {
 
   Real albedo = RoadData.BaseAlbedo.dir(ib, c);
 
@@ -45,10 +70,10 @@ void NetSolarRoad::ComputeAbsAndRefRad(int c, int ib, Real InRad, Real *AbsRad,
 }
 
 void NetSolarRoad::ComputeRefRadByComponent(int c, int ib, Real InRad,
-                                            Real *RefRadToSky,
-                                            Real *RefRadToSunwall,
-                                            Real *RefRadToShadewall,
-                                            bool scale_by_weight) const {
+                                              Real *RefRadToSky,
+                                              Real *RefRadToSunwall,
+                                              Real *RefRadToShadewall,
+                                              bool scale_by_weight) const {
 
   Real albedo = RoadData.BaseAlbedo.dir(ib, c);
   Real vf_sr = ViewFactorSkyFromRoad(c);
@@ -68,29 +93,20 @@ void NetSolarRoad::ComputeRefRadByComponent(int c, int ib, Real InRad,
 }
 
 void NetSolarWall::ComputeAbsAndRefRad(int c, int ib, Real InRad, Real *AbsRad,
-                                       Real *RefRad) const {
-
-  Real albedo = WallData.BaseAlbedo.dir(ib, c);
-
-  *AbsRad = (1.0 - albedo) * InRad;
-  *RefRad = albedo * InRad;
-}
-
-void NetSolarWall::ComputeRefRadByComponent(int c, int ib, Real InRad,
-                                            Real *RefRadToSky,
-                                            Real *RefRadToRoad,
-                                            Real *RefRadToOtherWall) const {
+                                       Real *RefRad, Real *RefRadToSky,
+                                       Real *RefRadToRoad,
+                                       Real *RefRadToOtherWall) const {
 
   Real albedo = WallData.BaseAlbedo.dir(ib, c);
   Real vf_sw = ViewFactorSkyFromWall(c);
   Real vf_rw = ViewFactorRoadFromWall(c);
   Real vf_ww = ViewFactorOtherWallFromWall(c);
 
-  Real RefRad = albedo * InRad;
-
-  *RefRadToSky = RefRad * vf_sw;
-  *RefRadToRoad = RefRad * vf_rw;
-  *RefRadToOtherWall = RefRad * vf_ww;
+  *AbsRad = (1.0 - albedo) * InRad;
+  *RefRad = albedo * InRad;
+  *RefRadToSky = (*RefRad) * vf_sw;
+  *RefRadToRoad = (*RefRad) * vf_rw;
+  *RefRadToOtherWall = (*RefRad) * vf_ww;
 }
 
 template <typename ViewType>
@@ -340,187 +356,169 @@ void UrbanAlbedo::compute_net_solar() const {
               data_bundle.ShadedWall.DownwellingShortRad.dir;
 
           Array1DR8 hwr = data_bundle.geometry.CanyonHwr;
+          /*
+          Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyFromRoad;
+          Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyFromWall;
+          Array1DR8 vf_wr = data_bundle.geometry.ViewFactorWallFromRoad;
+          Array1DR8 vf_rw = data_bundle.geometry.ViewFactorRoadFromWall;
+          Array1DR8 vf_ww = data_bundle.geometry.ViewFactorOtherWallFromWall;
 
-          bool scale_by_weight = true;
+          Array2DR8 alb_improad_dir = data_bundle.ImperviousRoad.BaseAlbedo.dir;
+          Array2DR8 alb_perroad_dir = data_bundle.PerviousRoad.BaseAlbedo.dir;
 
+          Array2DR8 alb_sunwall_dir = data_bundle.SunlitWall.BaseAlbedo.dir;
+          Array2DR8 alb_sunwall_dif = data_bundle.SunlitWall.BaseAlbedo.dif;
+
+          Array2DR8 alb_shdwall_dir = data_bundle.ShadedWall.BaseAlbedo.dir;
+          Array2DR8 alb_shdwall_dif = data_bundle.ShadedWall.BaseAlbedo.dif;
+
+          const Real WTROAD_PERV = 0.16666667163372040;
+          const Real WTROAD_IMPERV = 1.0 - WTROAD_PERV;
+          */
+
+            /*
           for (int ib = 0; ib < N_RAD; ib++) {
+            Real road_a_dir = 0.0;
+            Real road_r_dir = 0.0;
 
-            // Impervious road
+            // impervious road
+            Real improad_a_dir =
+                (1.0 - alb_improad_dir(ib, c)) * sdir_road(ib, c); // eq 2.38
+            Real improad_r_dir =
+                alb_improad_dir(ib, c) * sdir_road(ib, c);           // eq 2.43
+            Real improad_r_sky_dir = improad_r_dir * vf_sr(c);       // eq 2.48
+            Real improad_r_sunwall_dir = improad_r_dir * vf_wr(c);   // eq 2.49
+            Real improad_r_shadewall_dir = improad_r_dir * vf_wr(c); // eq 2.50
+            road_a_dir = road_a_dir + improad_a_dir * WTROAD_IMPERV;
+            road_r_dir = road_r_dir + improad_r_dir * WTROAD_IMPERV;
+            if (c == 0 && ib == 0) {
+              printf("A: ib = %d\n",ib);
+              printf("sdir_road(ib, c) = %e\n", sdir_road(ib, c));
+              printf("road_a_dir: abs = %e ref = %e\n", road_a_dir, road_r_dir);
+            }
+
+            // pervious road
+            Real pervroad_a_dir =
+                (1.0 - alb_perroad_dir(ib, c)) * sdir_road(ib, c); // eq 2.39
+            Real pervroad_r_dir =
+                alb_perroad_dir(ib, c) * sdir_road(ib, c);            // eq 2.44
+            Real perroad_r_sky_dir = pervroad_r_dir * vf_sr(c);       // eq 2.51
+            Real perroad_r_sunwall_dir = pervroad_r_dir * vf_wr(c);   // eq 2.52
+            Real perroad_r_shadewall_dir = pervroad_r_dir * vf_wr(c); // eq 2.53
+            road_a_dir = road_a_dir + pervroad_a_dir * WTROAD_PERV;
+            road_r_dir = road_r_dir + pervroad_r_dir * WTROAD_PERV;
+
+            Real road_r_sky_dir = road_r_dir * vf_sr(c);       // eq 2.54
+            Real road_r_sunwall_dir = road_r_dir * vf_wr(c);   // eq 2.55
+            Real road_r_shadewall_dir = road_r_dir * vf_wr(c); // eq 2.56
+
+            // sunwall
+            Real sunwall_a_dir = (1.0 - alb_sunwall_dir(ib, c)) *
+                                 sdir_sunlitwall(ib, c); // eq 2.40
+            Real sunwall_r_dir =
+                alb_sunwall_dir(ib, c) * sdir_sunlitwall(ib, c);     // eq 2.46
+            Real sunwall_r_sky_dir = sunwall_r_dir * vf_sw(c);       // eq 2.57
+            Real sunwall_r_road_dir = sunwall_r_dir * vf_rw(c);      // eq 2.58
+            Real sunwall_r_shadewall_dir = sunwall_r_dir * vf_ww(c); // eq 2.59
+
+            // shaded wall
+            Real shdwall_a_dir = (1.0 - alb_shdwall_dir(ib, c)) *
+                                 sdir_shadewall(ib, c); // eq 2.41
+            Real shdwall_r_dir =
+                alb_shdwall_dir(ib, c) * sdir_shadewall(ib, c);      // eq 2.47
+            Real shdwall_r_sky_dir = shdwall_r_dir * vf_sw(c);       // eq 2.60
+            Real shdwall_r_road_dir = shdwall_r_dir * vf_rw(c);      // eq 2.61
+            Real shdwall_r_shadewall_dir = shdwall_r_dir * vf_ww(c); // eq 2.62
+            */
+
+            /*
             Real improad_a_dir, improad_a_dir_by_wt;
             Real improad_r_dir, improad_r_dir_by_wt;
-            Real improad_r_sky_dir, improad_r_sky_dir_by_wt;
-            Real improad_r_sunwall_dir, improad_r_sunwall_dir_by_wt;
-            Real improad_r_shadewall_dir, improad_r_shadewall_dir_by_wt;
-
+            Real improad_r_sky_dir;
+            Real improad_r_sunwall_dir, improad_r_shadewall_dir;
+            Real improad_r_sunwall_dir_by_wt, improad_r_shadewall_dir_by_wt;
             ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                c, ib, sdir_road(ib, c), &improad_a_dir, &improad_r_dir,
-                !scale_by_weight);
-
-            ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                c, ib, sdir_road(ib, c), &improad_a_dir_by_wt,
-                &improad_r_dir_by_wt, scale_by_weight);
-
-            ImperviousRoadNetSolar.ComputeRefRadByComponent(
-                c, ib, sdir_road(ib, c), &improad_r_sky_dir,
+                c, ib, sdir_road(ib, c), &improad_a_dir, &improad_a_dir_by_wt,
+                &improad_r_dir, &improad_r_dir_by_wt, &improad_r_sky_dir,
                 &improad_r_sunwall_dir, &improad_r_shadewall_dir,
-                !scale_by_weight);
+                &improad_r_sunwall_dir_by_wt, &improad_r_shadewall_dir_by_wt);
 
-            ImperviousRoadNetSolar.ComputeRefRadByComponent(
-                c, ib, sdir_road(ib, c), &improad_r_sky_dir_by_wt,
-                &improad_r_sunwall_dir_by_wt, &improad_r_shadewall_dir_by_wt,
-                scale_by_weight);
-
-            // Pervious road
             Real perroad_a_dir, perroad_a_dir_by_wt;
             Real perroad_r_dir, perroad_r_dir_by_wt;
-            Real perroad_r_sky_dir, perroad_r_sky_dir_by_wt;
-            Real perroad_r_sunwall_dir, perroad_r_sunwall_dir_by_wt;
-            Real perroad_r_shadewall_dir, perroad_r_shadewall_dir_by_wt;
-
+            Real perroad_r_sky_dir;
+            Real perroad_r_sunwall_dir, perroad_r_shadewall_dir;
+            Real perroad_r_sunwall_dir_by_wt, perroad_r_shadewall_dir_by_wt;
             PerviousRoadNetSolar.ComputeAbsAndRefRad(
-                c, ib, sdir_road(ib, c), &perroad_a_dir, &perroad_r_dir,
-                !scale_by_weight);
-
-            PerviousRoadNetSolar.ComputeAbsAndRefRad(
-                c, ib, sdir_road(ib, c), &perroad_a_dir_by_wt,
-                &perroad_r_dir_by_wt, scale_by_weight);
-
-            PerviousRoadNetSolar.ComputeRefRadByComponent(
-                c, ib, sdir_road(ib, c), &perroad_r_sky_dir,
+                c, ib, sdir_road(ib, c), &perroad_a_dir, &perroad_a_dir_by_wt,
+                &perroad_r_dir, &perroad_r_dir_by_wt, &perroad_r_sky_dir,
                 &perroad_r_sunwall_dir, &perroad_r_shadewall_dir,
-                !scale_by_weight);
+                &perroad_r_sunwall_dir_by_wt, &perroad_r_shadewall_dir_by_wt);
 
-            PerviousRoadNetSolar.ComputeRefRadByComponent(
-                c, ib, sdir_road(ib, c), &perroad_r_sky_dir_by_wt,
-                &perroad_r_sunwall_dir_by_wt, &perroad_r_shadewall_dir_by_wt,
-                scale_by_weight);
+            Real road_r_sunwall_dir, road_r_shadewall_dir;
 
-            // Combining data from impervious and pervious road
-            Real road_a_dir, road_r_dir;
-            Real road_r_sky_dir, road_r_sunwall_dir, road_r_shadewall_dir;
-
-            road_a_dir = improad_a_dir_by_wt + perroad_a_dir_by_wt;
-            road_r_dir = improad_r_dir_by_wt + perroad_r_dir_by_wt;
-            road_r_sky_dir = improad_r_sky_dir_by_wt + perroad_r_sky_dir_by_wt;
             road_r_sunwall_dir =
                 improad_r_sunwall_dir_by_wt + perroad_r_sunwall_dir_by_wt;
             road_r_shadewall_dir =
                 improad_r_shadewall_dir_by_wt + perroad_r_shadewall_dir_by_wt;
 
-            // Sunlit wall
+            // not needed
+            // improad_r_sunwall_dir
+            // improad_r_shadewall_dir
+
             Real sunwall_a_dir, sunwall_r_dir;
-            Real sunwall_r_sky_dir, sunwall_r_road_dir, sunwall_r_shadewall_dir;
+            Real sunwall_r_sky, sunwall_r_road, sunwall_r_shadewall;
             SunlitWallNetSolar.ComputeAbsAndRefRad(
-                c, ib, sdir_sunlitwall(ib, c), &sunwall_a_dir, &sunwall_r_dir);
-            SunlitWallNetSolar.ComputeRefRadByComponent(
-                c, ib, sdir_sunlitwall(ib, c), &sunwall_r_sky_dir,
-                &sunwall_r_road_dir, &sunwall_r_shadewall_dir);
+                c, ib, sdir_sunlitwall(ib, c), &sunwall_a_dir, &sunwall_r_dir,
+                &sunwall_r_sky, &sunwall_r_road, &sunwall_r_shadewall);
 
-            // Shadedwall
             Real shadewall_a_dir, shadewall_r_dir;
-            Real shadewall_r_sky_dir, shadewall_r_road_dir,
-                shadewall_r_sunwall_dir;
-            ShadeWallNetSolar.ComputeAbsAndRefRad(c, ib, sdir_shadewall(ib, c),
-                                                  &shadewall_a_dir,
-                                                  &shadewall_r_dir);
-            ShadeWallNetSolar.ComputeRefRadByComponent(
-                c, ib, sdir_shadewall(ib, c), &shadewall_r_sky_dir,
-                &shadewall_r_road_dir, &shadewall_r_sunwall_dir);
-
-            // Cummulative absorbed and reflected radiation for the four
-            // surfaces
+            Real shadewall_r_sky, shadewall_r_road, shadewall_r_sunwall;
+            ShadeWallNetSolar.ComputeAbsAndRefRad(
+                c, ib, sdir_shadewall(ib, c), &shadewall_a_dir,
+                &shadewall_r_dir, &shadewall_r_sky, &shadewall_r_road,
+                &shadewall_r_sunwall);
 
             Real sabs_improad_dir = improad_a_dir;
             Real sabs_perroad_dir = perroad_a_dir;
             Real sabs_sunwall_dir = sunwall_a_dir;
-            Real sabs_shadewall_dir = shadewall_a_dir;
+            Real sabs_shdwall_dir = shadewall_a_dir;
 
             Real sref_improad_dir = improad_r_dir;
             Real sref_perroad_dir = perroad_r_dir;
             Real sref_sunwall_dir = sunwall_r_dir;
-            Real sref_shadewall_dir = shadewall_r_dir;
+            Real sref_shdwall_dir = shadewall_r_dir;
 
-            const int max_iter = 50;
-            for (int iter = 0; iter < max_iter; iter++) {
-              // step(1)
-              Real stot_for_road =
-                  (sunwall_r_road_dir + shadewall_r_road_dir) * hwr(c);
+            // Perform iterations
+            Real stot;
+            Real road_a_dir = 0.0;
+            Real road_r_dir = 0.0;
+            for (int iter = 0; iter < 6; iter++) {
+
+              // Step-1: Radiation coming onto road
+              stot = (sunwall_r_road + shadewall_r_road) * hwr(c);
+              if (c == 0)
+                printf("stot = %e \n", stot);
 
               ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                  c, ib, stot_for_road, &improad_a_dir, &improad_r_dir,
-                  !scale_by_weight);
-
-              ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                  c, ib, stot_for_road, &improad_a_dir_by_wt,
-                  &improad_r_dir_by_wt, scale_by_weight);
-
-              PerviousRoadNetSolar.ComputeAbsAndRefRad(
-                  c, ib, stot_for_road, &perroad_a_dir, &perroad_r_dir,
-                  !scale_by_weight);
+                  c, ib, stot, &improad_a_dir, &improad_a_dir_by_wt,
+                  &improad_r_dir, &improad_r_dir_by_wt, &improad_r_sky_dir,
+                  &improad_r_sunwall_dir, &improad_r_shadewall_dir,
+                  &improad_r_sunwall_dir_by_wt, &improad_r_shadewall_dir_by_wt);
+              road_a_dir += improad_a_dir_by_wt;
+              road_r_dir += improad_r_dir_by_wt;
 
               PerviousRoadNetSolar.ComputeAbsAndRefRad(
-                  c, ib, stot_for_road, &perroad_a_dir_by_wt,
-                  &perroad_r_dir_by_wt, scale_by_weight);
+                  c, ib, stot, &perroad_a_dir, &perroad_a_dir_by_wt,
+                  &perroad_r_dir, &perroad_r_dir_by_wt, &perroad_r_sky_dir,
+                  &perroad_r_sunwall_dir, &perroad_r_shadewall_dir,
+                  &perroad_r_sunwall_dir_by_wt, &perroad_r_shadewall_dir_by_wt);
+              road_a_dir += perroad_a_dir_by_wt;
+              road_r_dir += perroad_r_dir_by_wt;
 
-              road_a_dir = improad_a_dir_by_wt + perroad_a_dir_by_wt;
-              road_r_dir = improad_r_dir_by_wt + perroad_r_dir_by_wt;
-
-              Real stot_for_sunwall =
-                  road_r_sunwall_dir / hwr(c) + shadewall_r_sunwall_dir;
-              SunlitWallNetSolar.ComputeAbsAndRefRad(
-                  c, ib, stot_for_sunwall, &sunwall_a_dir, &sunwall_r_dir);
-
-              Real stot_for_shadewall =
-                  road_r_shadewall_dir / hwr(c) + sunwall_r_shadewall_dir;
-              ShadeWallNetSolar.ComputeAbsAndRefRad(c, ib, stot_for_shadewall,
-                                                    &shadewall_a_dir,
-                                                    &shadewall_r_dir);
-
-              // step (2)
-              sabs_improad_dir += improad_a_dir;
-              sabs_perroad_dir += perroad_a_dir;
-              sabs_sunwall_dir += sunwall_a_dir;
-              sabs_shadewall_dir += shadewall_a_dir;
-
-              // step (3)
-              ImperviousRoadNetSolar.ComputeRefRadByComponent(
-                  c, ib, stot_for_road, &improad_r_sky_dir_by_wt,
-                  &improad_r_sunwall_dir_by_wt, &improad_r_shadewall_dir_by_wt,
-                  scale_by_weight);
-
-              PerviousRoadNetSolar.ComputeRefRadByComponent(
-                  c, ib, stot_for_road, &perroad_r_sky_dir_by_wt,
-                  &perroad_r_sunwall_dir_by_wt, &perroad_r_shadewall_dir_by_wt,
-                  scale_by_weight);
-
-              road_r_sky_dir =
-                  improad_r_sky_dir_by_wt + perroad_r_sky_dir_by_wt;
-              road_r_sunwall_dir =
-                  improad_r_sunwall_dir_by_wt + perroad_r_sunwall_dir_by_wt;
-              road_r_shadewall_dir =
-                  improad_r_shadewall_dir_by_wt + perroad_r_shadewall_dir_by_wt;
-
-              SunlitWallNetSolar.ComputeRefRadByComponent(
-                  c, ib, stot_for_sunwall, &sunwall_r_sky_dir,
-                  &sunwall_r_road_dir, &sunwall_r_shadewall_dir);
-
-              ShadeWallNetSolar.ComputeRefRadByComponent(
-                  c, ib, stot_for_shadewall, &shadewall_r_sky_dir,
-                  &shadewall_r_road_dir, &shadewall_r_sunwall_dir);
-
-              // step (4)
-              sref_improad_dir += improad_r_dir;
-              sref_perroad_dir += perroad_r_dir;
-              sref_sunwall_dir += sunwall_r_dir;
-              sref_shadewall_dir += shadewall_r_dir;
-
-              Real crit =
-                  std::max({road_a_dir, sunwall_a_dir, shadewall_a_dir});
-              const Real errcrit = 0.00001;
-              if (crit < errcrit)
-                break;
+              // stot = road_r_sunwall_dir / hwr(c) + shadewall_r_sunwall_dir;
             }
           }
+              */
 
         } else {
         }

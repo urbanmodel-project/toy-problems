@@ -12,9 +12,15 @@ private:
   Array1DR8 ViewFactorSkyFromRoad;
   Array1DR8 ViewFactorWallFromRoad;
   RoadDataType RoadData;
+  Real Weight;
 
 public:
-  NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData);
+  NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData, Real);
+  void ComputeAbsAndRefRad(int c, int ib, Real InRad, Real *AbsRad,
+                           Real *RefRad, bool scale_by_weight) const;
+  void ComputeRefRadByComponent(int c, int ib, Real InRad, Real *RefRadToSky,
+                                Real *RefRadToSunwall, Real *RefRadToShadwall,
+                                bool scale_by_weight) const;
 };
 
 class NetSolarWall {
@@ -27,6 +33,11 @@ private:
 
 public:
   NetSolarWall(CanyonGeometryData *geometry, WallDataType &wallData);
+  void ComputeAbsAndRefRad(int c, int ib, Real InRad, Real *AbsRad,
+                           Real *RefRad) const;
+  void ComputeRefRadByComponent(int c, int ib, Real InRad, Real *RefRadToSky,
+                                Real *RefRadToRoad,
+                                Real *RefRadToOtherWall) const;
 };
 
 class UrbanAlbedo {
