@@ -151,7 +151,7 @@ void UrbanDataAllocator::initialize_canyon_geometry() const {
         wr(c) = 0.5 * (1.0 - sr(c));                 // eqn 2.27
         sw(c) = 0.5 * (hwr + 1.0 - sqrt_term) / hwr; // eqn 2.24
         rw(c) = sw(c);                               // eqn 2.27
-        ww(c) = 1.0 - sw(c) - wr(c);                 // eqn 2.28
+        ww(c) = 1.0 - sw(c) - rw(c);                 // eqn 2.28
       });
 }
 
