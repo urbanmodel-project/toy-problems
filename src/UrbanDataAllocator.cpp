@@ -37,11 +37,11 @@ void SolarInputDataAllocateViews(int N_LUN, int N_RAD, SolarInputData &solar) {
   ALLOCATE_VIEW(solar.CoszenH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(solar.Coszen, Array1DR8, N_LUN);
 
-  ALLOCATE_VIEW(solar.SdirHorizH, HostArray2DR8, N_RAD, N_LUN);
-  ALLOCATE_VIEW(solar.SdirHoriz, Array2DR8, N_RAD, N_LUN);
+  ALLOCATE_VIEW(solar.SdirHorizH, HostArray2DR8, N_LUN, N_RAD);
+  ALLOCATE_VIEW(solar.SdirHoriz, Array2DR8, N_LUN, N_RAD);
 
-  ALLOCATE_VIEW(solar.SdifHorizH, HostArray2DR8, N_RAD, N_LUN);
-  ALLOCATE_VIEW(solar.SdifHoriz, Array2DR8, N_RAD, N_LUN);
+  ALLOCATE_VIEW(solar.SdifHorizH, HostArray2DR8, N_LUN, N_RAD);
+  ALLOCATE_VIEW(solar.SdifHoriz, Array2DR8, N_LUN, N_RAD);
 
   ALLOCATE_VIEW(solar.FracSnowH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(solar.FracSnow, Array1DR8, N_LUN);
@@ -52,36 +52,36 @@ void SolarInputDataAllocateViews(int N_LUN, int N_RAD, SolarInputData &solar) {
 void CombinedRoadDataTypeAllocateViews(int N_LUN, int N_RAD,
                                        CombinedRoadDataType &combineRoad) {
   RADIATION_TYPE_ALLOCATE_VIEW(combineRoad.DownwellingShortRad, Array2DR8,
-                               N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(combineRoad.SnowAlbedo, Array2DR8, N_RAD, N_LUN);
+                               N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(combineRoad.SnowAlbedo, Array2DR8, N_LUN, N_RAD);
   RADIATION_TYPE_ALLOCATE_VIEW(combineRoad.AlbedoWithSnowEffects, Array2DR8,
-                               N_RAD, N_LUN);
+                               N_LUN, N_RAD);
 }
 
 void RoadDataTypeAllocateViews(int N_LUN, int N_RAD, RoadDataType &road) {
-  RADIATION_TYPE_ALLOCATE_VIEW(road.SnowAlbedo, Array2DR8, N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(road.AlbedoWithSnowEffects, Array2DR8, N_RAD,
-                               N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(road.BaseAlbedo, Array2DR8, N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(road.ReflectedShortRad, Array2DR8, N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(road.AbsorbedShortRad, Array2DR8, N_RAD, N_LUN);
+  RADIATION_TYPE_ALLOCATE_VIEW(road.SnowAlbedo, Array2DR8, N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(road.AlbedoWithSnowEffects, Array2DR8, N_LUN,
+                               N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(road.BaseAlbedo, Array2DR8, N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(road.ReflectedShortRad, Array2DR8, N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(road.AbsorbedShortRad, Array2DR8, N_LUN, N_RAD);
 }
 
 void WallDataTypeAllocateViews(int N_LUN, int N_RAD, WallDataType &wall) {
-  RADIATION_TYPE_ALLOCATE_VIEW(wall.DownwellingShortRad, Array2DR8, N_RAD,
-                               N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(wall.BaseAlbedo, Array2DR8, N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(wall.ReflectedShortRad, Array2DR8, N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(wall.AbsorbedShortRad, Array2DR8, N_RAD, N_LUN);
+  RADIATION_TYPE_ALLOCATE_VIEW(wall.DownwellingShortRad, Array2DR8, N_LUN,
+                               N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(wall.BaseAlbedo, Array2DR8, N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(wall.ReflectedShortRad, Array2DR8, N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(wall.AbsorbedShortRad, Array2DR8, N_LUN, N_RAD);
 }
 
 void RoofDataTypeAllocateViews(int N_LUN, int N_RAD, RoofDataType &roof) {
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.SnowAlbedo, Array2DR8, N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.AlbedoWithSnowEffects, Array2DR8, N_RAD,
-                               N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.BaseAlbedo, Array2DR8, N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.ReflectedShortRad, Array2DR8, N_RAD, N_LUN);
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.AbsorbedShortRad, Array2DR8, N_RAD, N_LUN);
+  RADIATION_TYPE_ALLOCATE_VIEW(roof.SnowAlbedo, Array2DR8, N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(roof.AlbedoWithSnowEffects, Array2DR8, N_LUN,
+                               N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(roof.BaseAlbedo, Array2DR8, N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(roof.ReflectedShortRad, Array2DR8, N_LUN, N_RAD);
+  RADIATION_TYPE_ALLOCATE_VIEW(roof.AbsorbedShortRad, Array2DR8, N_LUN, N_RAD);
 }
 
 // Method Definition: Contains the heavy lifting of allocation
@@ -183,20 +183,20 @@ void UrbanDataAllocator::initialize_properties() const {
         Array2DR8 alb_shdwall_dif = data_bundle.ShadedWall.BaseAlbedo.dif;
 
         for (int ib = 0; ib < N_RAD; ib++) {
-          alb_roof_dir(ib, c) = ALB_ROOF_DIR;
-          alb_roof_dif(ib, c) = ALB_ROOF_DIF;
+          alb_roof_dir(c, ib) = ALB_ROOF_DIR;
+          alb_roof_dif(c, ib) = ALB_ROOF_DIF;
 
-          alb_improad_dir(ib, c) = ALB_IMPROAD_DIR;
-          alb_improad_dif(ib, c) = ALB_IMPROAD_DIF;
+          alb_improad_dir(c, ib) = ALB_IMPROAD_DIR;
+          alb_improad_dif(c, ib) = ALB_IMPROAD_DIF;
 
-          alb_perroad_dir(ib, c) = ALB_PERROAD_DIR;
-          alb_perroad_dif(ib, c) = ALB_PERROAD_DIF;
+          alb_perroad_dir(c, ib) = ALB_PERROAD_DIR;
+          alb_perroad_dif(c, ib) = ALB_PERROAD_DIF;
 
-          alb_sunwall_dir(ib, c) = ALB_WALL_DIR;
-          alb_sunwall_dif(ib, c) = ALB_WALL_DIF;
+          alb_sunwall_dir(c, ib) = ALB_WALL_DIR;
+          alb_sunwall_dif(c, ib) = ALB_WALL_DIF;
 
-          alb_shdwall_dir(ib, c) = ALB_WALL_DIR;
-          alb_shdwall_dif(ib, c) = ALB_WALL_DIF;
+          alb_shdwall_dir(c, ib) = ALB_WALL_DIR;
+          alb_shdwall_dif(c, ib) = ALB_WALL_DIF;
         }
       });
 }
