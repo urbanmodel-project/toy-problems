@@ -4,26 +4,9 @@
 #include <DataTypes.hpp>
 #include <Kokkos_Core.hpp>
 #include <UrbanData.hpp>
+#include <UrbanRadCommon.hpp>
 
 namespace URBANXX {
-struct RadIndices {
-  int c;
-  int ib;
-  int rtype;
-};
-
-struct RadOutput {
-  Real Abs;
-  Real Ref;
-};
-
-struct RadRefComponents {
-  Real ToSky;
-  Real ToRoad;
-  Real ToSunwall;
-  Real ToShadewall;
-  Real ToOtherwall;
-};
 
 class NetSolarRoad {
 private:
