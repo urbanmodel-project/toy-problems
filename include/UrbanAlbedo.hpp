@@ -16,10 +16,11 @@ private:
 
 public:
   NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData, Real);
-  void ComputeAbsAndRefRad(int c, int ib, Real InRad, Real *AbsRad,
+  void ComputeAbsAndRefRad(int c, int ib, int rtype, Real InRad, Real *AbsRad,
                            Real *RefRad, bool scale_by_weight) const;
-  void ComputeRefRadByComponent(int c, int ib, Real InRad, Real *RefRadToSky,
-                                Real *RefRadToSunwall, Real *RefRadToShadwall,
+  void ComputeRefRadByComponent(int c, int ib, int rtype, Real InRad,
+                                Real *RefRadToSky, Real *RefRadToSunwall,
+                                Real *RefRadToShadwall,
                                 bool scale_by_weight) const;
 };
 
@@ -33,10 +34,10 @@ private:
 
 public:
   NetSolarWall(CanyonGeometryData *geometry, WallDataType &wallData);
-  void ComputeAbsAndRefRad(int c, int ib, Real InRad, Real *AbsRad,
+  void ComputeAbsAndRefRad(int c, int ib, int rtype, Real InRad, Real *AbsRad,
                            Real *RefRad) const;
-  void ComputeRefRadByComponent(int c, int ib, Real InRad, Real *RefRadToSky,
-                                Real *RefRadToRoad,
+  void ComputeRefRadByComponent(int c, int ib, int rtype, Real InRad,
+                                Real *RefRadToSky, Real *RefRadToRoad,
                                 Real *RefRadToOtherWall) const;
 };
 

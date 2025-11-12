@@ -38,55 +38,42 @@ struct SolarInputData {
   Array1DR8 FracSnow;      // fraction of ground covered by snow
 };
 
-template <typename ArrayType> struct RadiationType {
-  ArrayType dir;
-  ArrayType dif;
-};
-
 struct CombinedRoadDataType {
-  RadiationType<Array2DR8>
+  Array3DR8
       DownwellingShortRad; // downwelling shortwave radiation per unit road area
-  RadiationType<Array2DR8> SnowAlbedo; // snow albedo
-  RadiationType<Array2DR8>
-      AlbedoWithSnowEffects; // albedo of road including snow effects
+  Array3DR8 SnowAlbedo;    // snow albedo
+  Array3DR8 AlbedoWithSnowEffects; // albedo of road including snow effects
 };
 
 struct RoadDataType {
-  RadiationType<Array2DR8> SnowAlbedo; // snow albedo
-  RadiationType<Array2DR8>
-      AlbedoWithSnowEffects; // albedo of road including snow effects
-  RadiationType<Array2DR8>
-      ReflectedShortRad; // reflected solar radiation per unit ground area per
-                         // unit incident flux
-  RadiationType<Array2DR8> BaseAlbedo; // albedo of road without snow
-  RadiationType<Array2DR8>
-      AbsorbedShortRad; // absorbed solar radiation per unit ground area per
-                        // unit incident flux
+  Array3DR8 SnowAlbedo;            // snow albedo
+  Array3DR8 AlbedoWithSnowEffects; // albedo of road including snow effects
+  Array3DR8 ReflectedShortRad; // reflected solar radiation per unit ground area
+                               // per unit incident flux
+  Array3DR8 BaseAlbedo;        // albedo of road without snow
+  Array3DR8 AbsorbedShortRad;  // absorbed solar radiation per unit ground area
+                               // per unit incident flux
 };
 
 struct WallDataType {
-  RadiationType<Array2DR8>
+  Array3DR8
       DownwellingShortRad; // downwelling shortwave radiation per unit wall area
-  RadiationType<Array2DR8>
+  Array3DR8
       ReflectedShortRad; // reflected shortave radiation per unit wall area per
   // unit incident flux
-  RadiationType<Array2DR8> BaseAlbedo; // albedo of wall
-  RadiationType<Array2DR8>
-      AbsorbedShortRad; // absorbed shortwave radation per unit wall area per
-                        // unit incident flux
+  Array3DR8 BaseAlbedo;       // albedo of wall
+  Array3DR8 AbsorbedShortRad; // absorbed shortwave radation per unit wall area
+                              // per unit incident flux
 };
 
 struct RoofDataType {
-  RadiationType<Array2DR8> SnowAlbedo; // snow albedo
-  RadiationType<Array2DR8>
-      AlbedoWithSnowEffects; // albedo of roof including snow effects
-  RadiationType<Array2DR8>
-      ReflectedShortRad; // reflected solar radiation per unit ground area per
-                         // unit incident flux
-  RadiationType<Array2DR8> BaseAlbedo; // albedo of roof without snow
-  RadiationType<Array2DR8>
-      AbsorbedShortRad; // absorbed solar radiation per unit ground area per
-                        // unit incident flux
+  Array3DR8 SnowAlbedo;            // snow albedo
+  Array3DR8 AlbedoWithSnowEffects; // albedo of roof including snow effects
+  Array3DR8 ReflectedShortRad; // reflected solar radiation per unit ground area
+                               // per unit incident flux
+  Array3DR8 BaseAlbedo;        // albedo of roof without snow
+  Array3DR8 AbsorbedShortRad;  // absorbed solar radiation per unit ground area
+                               // per unit incident flux
 };
 
 // --- The Master Bundle passed between all classes ---

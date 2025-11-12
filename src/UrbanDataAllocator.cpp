@@ -11,12 +11,10 @@ UrbanDataAllocator::UrbanDataAllocator(UrbanSharedDataBundle &bundle)
   // Implementation is simple: just initializes the reference member.
 }
 
+#define N_RADTYPE 2
+
 #define ALLOCATE_VIEW(viewname, type, ...)                                     \
   viewname = type(#viewname, __VA_ARGS__);
-
-#define RADIATION_TYPE_ALLOCATE_VIEW(base, type, ...)                          \
-  ALLOCATE_VIEW(base.dir, type, __VA_ARGS__);                                  \
-  ALLOCATE_VIEW(base.dif, type, __VA_ARGS__)
 
 void CanyonGeometryAllocateViews(int N_LUN, CanyonGeometryData &geometry) {
 
@@ -51,37 +49,34 @@ void SolarInputDataAllocateViews(int N_LUN, int N_RAD, SolarInputData &solar) {
 
 void CombinedRoadDataTypeAllocateViews(int N_LUN, int N_RAD,
                                        CombinedRoadDataType &combineRoad) {
-  RADIATION_TYPE_ALLOCATE_VIEW(combineRoad.DownwellingShortRad, Array2DR8,
-                               N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(combineRoad.SnowAlbedo, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(combineRoad.AlbedoWithSnowEffects, Array2DR8,
-                               N_LUN, N_RAD);
+  ALLOCATE_VIEW(combineRoad.DownwellingShortRad, Array3DR8, N_LUN, N_RAD,
+                N_RADTYPE);
+  ALLOCATE_VIEW(combineRoad.SnowAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(combineRoad.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD,
+                N_RADTYPE);
 }
 
 void RoadDataTypeAllocateViews(int N_LUN, int N_RAD, RoadDataType &road) {
-  RADIATION_TYPE_ALLOCATE_VIEW(road.SnowAlbedo, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(road.AlbedoWithSnowEffects, Array2DR8, N_LUN,
-                               N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(road.BaseAlbedo, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(road.ReflectedShortRad, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(road.AbsorbedShortRad, Array2DR8, N_LUN, N_RAD);
+  ALLOCATE_VIEW(road.SnowAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(road.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(road.BaseAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(road.ReflectedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(road.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
 }
 
 void WallDataTypeAllocateViews(int N_LUN, int N_RAD, WallDataType &wall) {
-  RADIATION_TYPE_ALLOCATE_VIEW(wall.DownwellingShortRad, Array2DR8, N_LUN,
-                               N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(wall.BaseAlbedo, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(wall.ReflectedShortRad, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(wall.AbsorbedShortRad, Array2DR8, N_LUN, N_RAD);
+  ALLOCATE_VIEW(wall.DownwellingShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(wall.BaseAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(wall.ReflectedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(wall.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
 }
 
 void RoofDataTypeAllocateViews(int N_LUN, int N_RAD, RoofDataType &roof) {
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.SnowAlbedo, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.AlbedoWithSnowEffects, Array2DR8, N_LUN,
-                               N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.BaseAlbedo, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.ReflectedShortRad, Array2DR8, N_LUN, N_RAD);
-  RADIATION_TYPE_ALLOCATE_VIEW(roof.AbsorbedShortRad, Array2DR8, N_LUN, N_RAD);
+  ALLOCATE_VIEW(roof.SnowAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(roof.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(roof.BaseAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(roof.ReflectedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+  ALLOCATE_VIEW(roof.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
 }
 
 // Method Definition: Contains the heavy lifting of allocation
@@ -171,32 +166,33 @@ void UrbanDataAllocator::initialize_properties() const {
 
   Kokkos::parallel_for(
       "SetParameters", N_LUN, KOKKOS_LAMBDA(const int c) {
-        Array2DR8 alb_roof_dir = data_bundle.Roof.BaseAlbedo.dir;
-        Array2DR8 alb_roof_dif = data_bundle.Roof.BaseAlbedo.dif;
-        Array2DR8 alb_improad_dir = data_bundle.ImperviousRoad.BaseAlbedo.dir;
-        Array2DR8 alb_improad_dif = data_bundle.ImperviousRoad.BaseAlbedo.dif;
-        Array2DR8 alb_perroad_dir = data_bundle.PerviousRoad.BaseAlbedo.dir;
-        Array2DR8 alb_perroad_dif = data_bundle.PerviousRoad.BaseAlbedo.dif;
-        Array2DR8 alb_sunwall_dir = data_bundle.SunlitWall.BaseAlbedo.dir;
-        Array2DR8 alb_sunwall_dif = data_bundle.SunlitWall.BaseAlbedo.dif;
-        Array2DR8 alb_shdwall_dir = data_bundle.ShadedWall.BaseAlbedo.dir;
-        Array2DR8 alb_shdwall_dif = data_bundle.ShadedWall.BaseAlbedo.dif;
+        Array3DR8 alb_roof = data_bundle.Roof.BaseAlbedo;
+        // Array2DR8 alb_roof_dif = data_bundle.Roof.BaseAlbedo.dif;
+        Array3DR8 alb_improad = data_bundle.ImperviousRoad.BaseAlbedo;
+        // Array2DR8 alb_improad_dif =
+        // data_bundle.ImperviousRoad.BaseAlbedo.dif;
+        Array3DR8 alb_perroad = data_bundle.PerviousRoad.BaseAlbedo;
+        // Array2DR8 alb_perroad_dif = data_bundle.PerviousRoad.BaseAlbedo.dif;
+        Array3DR8 alb_sunwall = data_bundle.SunlitWall.BaseAlbedo;
+        // Array2DR8 alb_sunwall_dif = data_bundle.SunlitWall.BaseAlbedo.dif;
+        Array3DR8 alb_shdwall = data_bundle.ShadedWall.BaseAlbedo;
+        // Array2DR8 alb_shdwall_dif = data_bundle.ShadedWall.BaseAlbedo.dif;
 
         for (int ib = 0; ib < N_RAD; ib++) {
-          alb_roof_dir(c, ib) = ALB_ROOF_DIR;
-          alb_roof_dif(c, ib) = ALB_ROOF_DIF;
+          alb_roof(c, ib, 0) = ALB_ROOF_DIR;
+          alb_roof(c, ib, 1) = ALB_ROOF_DIF;
 
-          alb_improad_dir(c, ib) = ALB_IMPROAD_DIR;
-          alb_improad_dif(c, ib) = ALB_IMPROAD_DIF;
+          alb_improad(c, ib, 0) = ALB_IMPROAD_DIR;
+          alb_improad(c, ib, 1) = ALB_IMPROAD_DIF;
 
-          alb_perroad_dir(c, ib) = ALB_PERROAD_DIR;
-          alb_perroad_dif(c, ib) = ALB_PERROAD_DIF;
+          alb_perroad(c, ib, 0) = ALB_PERROAD_DIR;
+          alb_perroad(c, ib, 1) = ALB_PERROAD_DIF;
 
-          alb_sunwall_dir(c, ib) = ALB_WALL_DIR;
-          alb_sunwall_dif(c, ib) = ALB_WALL_DIF;
+          alb_sunwall(c, ib, 0) = ALB_WALL_DIR;
+          alb_sunwall(c, ib, 1) = ALB_WALL_DIF;
 
-          alb_shdwall_dir(c, ib) = ALB_WALL_DIR;
-          alb_shdwall_dif(c, ib) = ALB_WALL_DIF;
+          alb_shdwall(c, ib, 0) = ALB_WALL_DIR;
+          alb_shdwall(c, ib, 1) = ALB_WALL_DIF;
         }
       });
 }
