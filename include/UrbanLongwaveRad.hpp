@@ -59,6 +59,7 @@ private:
 
 public:
   UrbanLongwave(UrbanSharedDataBundle &bundle);
+  void setLongwaveInputs();
 };
 } // namespace URBANXX
 

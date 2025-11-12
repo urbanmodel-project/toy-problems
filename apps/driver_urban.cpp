@@ -48,6 +48,8 @@ int main(int argc, char* argv[]) {
         UrbanLongwave longwave_physics(simulation_bundle);
 
         if (1) {
+            longwave_physics.setLongwaveInputs();
+
             albedo_physics.setSolarInputs();
             albedo_physics.computeIncidentRadiation();
             albedo_physics.computeSnowAlbedo();

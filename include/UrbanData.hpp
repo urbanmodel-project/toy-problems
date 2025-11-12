@@ -24,7 +24,7 @@ struct CanyonGeometryData {
 };
 
 // --- Local Variables and Initial Inputs ---
-struct SolarInputData {
+struct AtmosphereInputData {
   HostArray1DR8 CoszenH; // cosine solar zenith angle
   Array1DR8 Coszen;      // cosine solar zenith angle
 
@@ -36,6 +36,9 @@ struct SolarInputData {
 
   HostArray1DR8 FracSnowH; // fraction of ground covered by snow
   Array1DR8 FracSnow;      // fraction of ground covered by snow
+
+  HostArray1DR8 DownwellingLonwgRadH; // downwelling longwave radiation on host
+  Array1DR8 DownwellingLonwgRad; // downwelling longwave radiation on device
 };
 
 struct CombinedRoadDataType {
@@ -85,7 +88,7 @@ struct RoofDataType {
 // --- The Master Bundle passed between all classes ---
 struct UrbanSharedDataBundle {
   CanyonGeometryData geometry;
-  SolarInputData input;
+  AtmosphereInputData input;
 
   RoofDataType Roof;
   WallDataType SunlitWall;

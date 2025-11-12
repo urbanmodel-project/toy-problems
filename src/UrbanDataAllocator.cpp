@@ -30,8 +30,8 @@ void CanyonGeometryAllocateViews(int N_LUN, CanyonGeometryData &geometry) {
   printf("All CanopyGeomtry Views successfully allocated on device.\n");
 }
 
-void SolarInputDataAllocateViews(int N_LUN, int N_RAD_BAND,
-                                 SolarInputData &solar) {
+void AtmosphereInputDataAllocateViews(int N_LUN, int N_RAD_BAND,
+                                      AtmosphereInputData &solar) {
 
   ALLOCATE_VIEW(solar.CoszenH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(solar.Coszen, Array1DR8, N_LUN);
@@ -45,7 +45,11 @@ void SolarInputDataAllocateViews(int N_LUN, int N_RAD_BAND,
   ALLOCATE_VIEW(solar.FracSnowH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(solar.FracSnow, Array1DR8, N_LUN);
 
-  printf("All SolarInputData Views successfully allocated on device.\n");
+  ALLOCATE_VIEW(solar.DownwellingLonwgRadH, HostArray1DR8, N_LUN);
+  ALLOCATE_VIEW(solar.DownwellingLonwgRad, Array1DR8, N_LUN);
+
+  printf("All AtmosphereInputData Views successfully allocated on host and "
+         "device.\n");
 }
 
 void CombinedRoadDataTypeAllocateViews(int N_LUN, int N_RAD_BAND,
@@ -105,7 +109,7 @@ void UrbanDataAllocator::allocate_all_views() {
          N_LUN, N_RAD_BAND);
 
   CanyonGeometryAllocateViews(N_LUN, data_bundle.geometry);
-  SolarInputDataAllocateViews(N_LUN, N_RAD_BAND, data_bundle.input);
+  AtmosphereInputDataAllocateViews(N_LUN, N_RAD_BAND, data_bundle.input);
   CombinedRoadDataTypeAllocateViews(N_LUN, N_RAD_BAND,
                                     data_bundle.CombinedRoad);
   WallDataTypeAllocateViews(N_LUN, N_RAD_BAND, data_bundle.SunlitWall);

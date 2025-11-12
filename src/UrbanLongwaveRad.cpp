@@ -140,4 +140,21 @@ void NetLongwaveWall::ComputeEmiRadByComponent(RadIndices idx, Real InRad,
   ComputeRadByComponent(idx, Data, ref);
 }
 
+void UrbanLongwave::setLongwaveInputs() {
+
+  std::cout << "Setting longwave inputs\n";
+
+  int N_LUN = data_bundle.N_LUN;
+  HostArray1DR8 DwLongwaveH = data_bundle.input.DownwellingLonwgRadH;
+  Array1DR8 DwLongwave = data_bundle.input.DownwellingLonwgRad;
+
+  const Real lwdown = 432.79580327766450;
+
+  for (int i = 0; i < N_LUN; i++) {
+    DwLongwaveH(i) = lwdown;
+  }
+
+  Kokkos::deep_copy(DwLongwave, DwLongwaveH);
+}
+
 } // namespace URBANXX
