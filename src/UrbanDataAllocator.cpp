@@ -67,6 +67,7 @@ void RoadDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoadDataType &road) {
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(road.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
                 N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(road.Emissivity, Array1DR8, N_LUN)
 }
 
 void WallDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, WallDataType &wall) {
@@ -77,6 +78,7 @@ void WallDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, WallDataType &wall) {
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(wall.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
                 N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(wall.Emissivity, Array1DR8, N_LUN)
 }
 
 void RoofDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoofDataType &roof) {
@@ -88,6 +90,7 @@ void RoofDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoofDataType &roof) {
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(roof.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
                 N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(roof.Emissivity, Array1DR8, N_LUN)
 }
 
 // Method Definition: Contains the heavy lifting of allocation
@@ -176,6 +179,10 @@ void UrbanDataAllocator::initialize_properties() const {
   const Real ALB_ROOF_DIF = ALB_ROOF_DIR;
   const Real ALB_WALL_DIR = 0.200000002980232;
   const Real ALB_WALL_DIF = ALB_WALL_DIR;
+  const Real EMISS_ROOF = 0.90600001811981201;
+  const Real EMISS_IMPROAD = 0.87999999523162842;
+  const Real EMISS_PERROAD = 0.94999998807907104;
+  const Real EMISS_WALL = 0.90200001001358032;
 
   Kokkos::parallel_for(
       "SetParameters", N_LUN, KOKKOS_LAMBDA(const int c) {
@@ -207,6 +214,18 @@ void UrbanDataAllocator::initialize_properties() const {
           alb_shdwall(c, ib, 0) = ALB_WALL_DIR;
           alb_shdwall(c, ib, 1) = ALB_WALL_DIF;
         }
+
+        Array1DR8 em_improad = data_bundle.ImperviousRoad.Emissivity;
+        Array1DR8 em_perroad = data_bundle.PerviousRoad.Emissivity;
+        Array1DR8 em_roof = data_bundle.Roof.Emissivity;
+        Array1DR8 em_sunwall = data_bundle.SunlitWall.Emissivity;
+        Array1DR8 em_shdwall = data_bundle.ShadedWall.Emissivity;
+
+        em_roof(c) = EMISS_ROOF;
+        em_improad(c) = EMISS_IMPROAD;
+        em_perroad(c) = EMISS_PERROAD;
+        em_sunwall(c) = EMISS_WALL;
+        em_shdwall(c) = EMISS_WALL;
       });
 }
 

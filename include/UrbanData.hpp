@@ -53,6 +53,7 @@ struct RoadDataType {
   Array3DR8 BaseAlbedo;        // albedo of road without snow
   Array3DR8 AbsorbedShortRad;  // absorbed solar radiation per unit ground area
                                // per unit incident flux
+  Array1DR8 Emissivity;        // emissivity
 };
 
 struct WallDataType {
@@ -64,6 +65,7 @@ struct WallDataType {
   Array3DR8 BaseAlbedo;       // albedo of wall
   Array3DR8 AbsorbedShortRad; // absorbed shortwave radation per unit wall area
                               // per unit incident flux
+  Array1DR8 Emissivity;       // emissivity
 };
 
 struct RoofDataType {
@@ -74,6 +76,7 @@ struct RoofDataType {
   Array3DR8 BaseAlbedo;        // albedo of roof without snow
   Array3DR8 AbsorbedShortRad;  // absorbed solar radiation per unit ground area
                                // per unit incident flux
+  Array1DR8 Emissivity;        // emissivity
 };
 
 // --- The Master Bundle passed between all classes ---
