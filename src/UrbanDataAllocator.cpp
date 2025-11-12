@@ -68,6 +68,7 @@ void RoadDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoadDataType &road) {
   ALLOCATE_VIEW(road.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(road.Emissivity, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(road.Temperature, Array1DR8, N_LUN)
 }
 
 void WallDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, WallDataType &wall) {
@@ -79,6 +80,7 @@ void WallDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, WallDataType &wall) {
   ALLOCATE_VIEW(wall.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(wall.Emissivity, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(wall.Temperature, Array1DR8, N_LUN)
 }
 
 void RoofDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoofDataType &roof) {
@@ -91,10 +93,11 @@ void RoofDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoofDataType &roof) {
   ALLOCATE_VIEW(roof.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(roof.Emissivity, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(roof.Temperature, Array1DR8, N_LUN)
 }
 
 // Method Definition: Contains the heavy lifting of allocation
-void UrbanDataAllocator::allocate_all_views() const {
+void UrbanDataAllocator::allocate_all_views() {
   int N_LUN = data_bundle.N_LUN;
   int N_RAD_BAND = data_bundle.N_RAD_BAND;
 
@@ -126,7 +129,7 @@ void print_view_1d(const ViewType &view, const std::string &name = "") {
   std::cout << "\n";
 }
 
-void UrbanDataAllocator::initialize_canyon_geometry() const {
+void UrbanDataAllocator::initialize_canyon_geometry() {
 
   int N_LUN = data_bundle.N_LUN;
   int N_RAD_BAND = data_bundle.N_RAD_BAND;
@@ -166,7 +169,7 @@ void UrbanDataAllocator::initialize_canyon_geometry() const {
       });
 }
 
-void UrbanDataAllocator::initialize_properties() const {
+void UrbanDataAllocator::initialize_properties() {
 
   int N_LUN = data_bundle.N_LUN;
   int N_RAD_BAND = data_bundle.N_RAD_BAND;
@@ -226,6 +229,27 @@ void UrbanDataAllocator::initialize_properties() const {
         em_perroad(c) = EMISS_PERROAD;
         em_sunwall(c) = EMISS_WALL;
         em_shdwall(c) = EMISS_WALL;
+      });
+}
+
+void UrbanDataAllocator::initialize_states() {
+
+  int N_LUN = data_bundle.N_LUN;
+  const Real TEMP_INIT = 274.0;
+
+  Kokkos::parallel_for(
+      "SetParameters", N_LUN, KOKKOS_LAMBDA(const int c) {
+        Array1DR8 T_improad = data_bundle.ImperviousRoad.Temperature;
+        Array1DR8 T_perroad = data_bundle.PerviousRoad.Temperature;
+        Array1DR8 T_roof = data_bundle.Roof.Temperature;
+        Array1DR8 T_sunwall = data_bundle.SunlitWall.Temperature;
+        Array1DR8 T_shdwall = data_bundle.ShadedWall.Temperature;
+
+        T_roof(c) = TEMP_INIT;
+        T_improad(c) = TEMP_INIT;
+        T_perroad(c) = TEMP_INIT;
+        T_sunwall(c) = TEMP_INIT;
+        T_shdwall(c) = TEMP_INIT;
       });
 }
 

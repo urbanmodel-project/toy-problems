@@ -54,6 +54,7 @@ struct RoadDataType {
   Array3DR8 AbsorbedShortRad;  // absorbed solar radiation per unit ground area
                                // per unit incident flux
   Array1DR8 Emissivity;        // emissivity
+  Array1DR8 Temperature;       // temperature
 };
 
 struct WallDataType {
@@ -66,6 +67,7 @@ struct WallDataType {
   Array3DR8 AbsorbedShortRad; // absorbed shortwave radation per unit wall area
                               // per unit incident flux
   Array1DR8 Emissivity;       // emissivity
+  Array1DR8 Temperature;      // temperature
 };
 
 struct RoofDataType {
@@ -77,6 +79,7 @@ struct RoofDataType {
   Array3DR8 AbsorbedShortRad;  // absorbed solar radiation per unit ground area
                                // per unit incident flux
   Array1DR8 Emissivity;        // emissivity
+  Array1DR8 Temperature;       // temperature
 };
 
 // --- The Master Bundle passed between all classes ---

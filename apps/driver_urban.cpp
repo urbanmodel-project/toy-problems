@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
         allocator.allocate_all_views();
         allocator.initialize_canyon_geometry();
         allocator.initialize_properties();
+        allocator.initialize_states();
 
         UrbanAlbedo albedo_physics(simulation_bundle);
         UrbanLongwave longwave_physics(simulation_bundle);

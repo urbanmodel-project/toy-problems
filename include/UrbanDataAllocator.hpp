@@ -25,10 +25,11 @@ public:
   /**
    * @brief Allocates memory for all Kokkos Views in the bundle on the device.
    */
-  void allocate_all_views() const;
+  void allocate_all_views();
 
-  void initialize_canyon_geometry() const;
-  void initialize_properties() const;
+  void initialize_canyon_geometry();
+  void initialize_properties();
+  void initialize_states();
 
   // Optional: Methods for allocating specific sub-groups of views
   // void allocate_geometry() const;
