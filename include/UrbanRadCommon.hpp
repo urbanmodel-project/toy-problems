@@ -1,6 +1,8 @@
 #ifndef URBAN_RAD_COMMON_HPP
 #define URBAN_RAD_COMMON_HPP
 
+#include <DataTypes.hpp>
+
 namespace URBANXX {
 struct RadIndices {
   int c;
@@ -9,8 +11,9 @@ struct RadIndices {
 };
 
 struct RadOutput {
-  Real Abs;
-  Real Ref;
+  Real Abs; // absorbed
+  Real Ref; // reflected
+  Real Emi; // emitted
 };
 
 struct RadRefComponents {

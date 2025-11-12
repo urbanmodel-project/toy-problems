@@ -40,6 +40,7 @@ void NetSolarRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
 
   out.Abs = (1.0 - albedo) * InRad;
   out.Ref = albedo * InRad;
+  out.Emi = 0.0;
   if (scale_by_weight) {
     out.Abs *= Weight;
     out.Ref *= Weight;
@@ -78,6 +79,7 @@ void NetSolarWall::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
 
   out.Abs = (1.0 - albedo) * InRad;
   out.Ref = albedo * InRad;
+  out.Emi = 0.0;
 }
 
 KOKKOS_FUNCTION
