@@ -89,7 +89,7 @@ struct UrbanSharedDataBundle {
   CombinedRoadDataType CombinedRoad;
 
   const int N_LUN;
-  const int N_RAD;
+  const int N_RAD_BAND;
 };
 } // namespace URBANXX
 #endif

@@ -10,7 +10,7 @@ using namespace URBANXX;
 int main(int argc, char* argv[]) {
 
     const int N_LUN = 1000; // Number of Land Units
-    const int N_RAD = 2;    // Number of Radiation Bands (Visible/NIR) [cite: 1591]
+    const int N_RAD_BAND = 2;    // Number of Radiation Bands (Visible/NIR) [cite: 1591]
     const double DT = 60.0; // Time step (not used, but common context)
 
     // Initialize MPI
@@ -31,10 +31,10 @@ int main(int argc, char* argv[]) {
         }
 
         const int N_LUN = 3;
-        const int N_RAD = 2;
+        const int N_RAD_BAND = 2;
         UrbanSharedDataBundle simulation_bundle = {
                 .N_LUN = N_LUN,
-                .N_RAD = N_RAD
+                .N_RAD_BAND = N_RAD_BAND
             };
 
         UrbanDataAllocator allocator(simulation_bundle);

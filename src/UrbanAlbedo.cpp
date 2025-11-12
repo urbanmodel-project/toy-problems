@@ -158,7 +158,7 @@ void UrbanAlbedo::compute_incident_radiation() const {
   const Real rpi = M_PI;
 
   int N_LUN = data_bundle.N_LUN;
-  int N_RAD = data_bundle.N_RAD;
+  int N_RAD_BAND = data_bundle.N_RAD_BAND;
 
   Kokkos::parallel_for(
       "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
@@ -174,8 +174,8 @@ void UrbanAlbedo::compute_incident_radiation() const {
 
         // the incident direct and diffuse radiation for VIS and NIR bands is
         // assumed to be unity
-        std::vector<Real> sdir(N_RAD, 1.0);
-        std::vector<Real> sdif(N_RAD, 1.0);
+        std::vector<Real> sdir(N_RAD_BAND, 1.0);
+        std::vector<Real> sdif(N_RAD_BAND, 1.0);
 
         if (coszen > 0) {
           const Real tiny = 1.0e-6;
@@ -187,7 +187,7 @@ void UrbanAlbedo::compute_incident_radiation() const {
           const Real costheta0 = std::cos(theta0);
           const Real theta0OverPi = theta0 / rpi;
 
-          for (int ib = 0; ib < N_RAD; ib++) {
+          for (int ib = 0; ib < N_RAD_BAND; ib++) {
             // director radiation
             s_shadewall(c, ib, 0) = 0.0; // eqn. 2.15
             s_road(c, ib, 0) = sdir[ib] * (2.0 * theta0OverPi -
@@ -224,7 +224,7 @@ void UrbanAlbedo::compute_snow_albedo() const {
   const Real SNOW_ALBEDO_NIR = 0.56;
 
   int N_LUN = data_bundle.N_LUN;
-  int N_RAD = data_bundle.N_RAD;
+  int N_RAD_BAND = data_bundle.N_RAD_BAND;
   Kokkos::parallel_for(
       "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
         const Real coszen = data_bundle.input.Coszen(c);
@@ -265,7 +265,7 @@ void UrbanAlbedo::compute_combined_albedo() const {
   const Real SNOW_ALBEDO_NIR = 0.56;
 
   int N_LUN = data_bundle.N_LUN;
-  int N_RAD = data_bundle.N_RAD;
+  int N_RAD_BAND = data_bundle.N_RAD_BAND;
   Kokkos::parallel_for(
       "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
         const Real coszen = data_bundle.input.Coszen(c);
@@ -299,7 +299,7 @@ void UrbanAlbedo::compute_combined_albedo() const {
 
         const Real frac_sno = 0.0;
 
-        for (int ib = 0; ib < N_RAD; ib++) {
+        for (int ib = 0; ib < N_RAD_BAND; ib++) {
           alb_roof_s(c, ib, 0) = alb_roof(c, ib, 0) * (1.0 - frac_sno) +
                                  albsn_roof(c, ib, 0) * frac_sno;
           alb_roof_s(c, ib, 1) = alb_roof(c, ib, 1) * (1.0 - frac_sno) +
@@ -328,7 +328,7 @@ void UrbanAlbedo::compute_net_solar() const {
   std::cout << "In compute_net_solar\n";
 
   int N_LUN = data_bundle.N_LUN;
-  int N_RAD = data_bundle.N_RAD;
+  int N_RAD_BAND = data_bundle.N_RAD_BAND;
 
   Kokkos::parallel_for(
       "ComputeNetSolar", N_LUN, KOKKOS_LAMBDA(const int c) {
@@ -346,7 +346,7 @@ void UrbanAlbedo::compute_net_solar() const {
 
           for (int rtype = 0; rtype < 2; rtype++) {
 
-            for (int ib = 0; ib < N_RAD; ib++) {
+            for (int ib = 0; ib < N_RAD_BAND; ib++) {
 
               // Impervious road
               Real improad_a, improad_a_by_wt;

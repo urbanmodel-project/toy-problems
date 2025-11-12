@@ -11,7 +11,7 @@ UrbanDataAllocator::UrbanDataAllocator(UrbanSharedDataBundle &bundle)
   // Implementation is simple: just initializes the reference member.
 }
 
-#define N_RADTYPE 2
+#define N_RAD_BANDTYPE 2
 
 #define ALLOCATE_VIEW(viewname, type, ...)                                     \
   viewname = type(#viewname, __VA_ARGS__);
@@ -30,16 +30,17 @@ void CanyonGeometryAllocateViews(int N_LUN, CanyonGeometryData &geometry) {
   printf("All CanopyGeomtry Views successfully allocated on device.\n");
 }
 
-void SolarInputDataAllocateViews(int N_LUN, int N_RAD, SolarInputData &solar) {
+void SolarInputDataAllocateViews(int N_LUN, int N_RAD_BAND,
+                                 SolarInputData &solar) {
 
   ALLOCATE_VIEW(solar.CoszenH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(solar.Coszen, Array1DR8, N_LUN);
 
-  ALLOCATE_VIEW(solar.SdirHorizH, HostArray2DR8, N_LUN, N_RAD);
-  ALLOCATE_VIEW(solar.SdirHoriz, Array2DR8, N_LUN, N_RAD);
+  ALLOCATE_VIEW(solar.SdirHorizH, HostArray2DR8, N_LUN, N_RAD_BAND);
+  ALLOCATE_VIEW(solar.SdirHoriz, Array2DR8, N_LUN, N_RAD_BAND);
 
-  ALLOCATE_VIEW(solar.SdifHorizH, HostArray2DR8, N_LUN, N_RAD);
-  ALLOCATE_VIEW(solar.SdifHoriz, Array2DR8, N_LUN, N_RAD);
+  ALLOCATE_VIEW(solar.SdifHorizH, HostArray2DR8, N_LUN, N_RAD_BAND);
+  ALLOCATE_VIEW(solar.SdifHoriz, Array2DR8, N_LUN, N_RAD_BAND);
 
   ALLOCATE_VIEW(solar.FracSnowH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(solar.FracSnow, Array1DR8, N_LUN);
@@ -47,55 +48,67 @@ void SolarInputDataAllocateViews(int N_LUN, int N_RAD, SolarInputData &solar) {
   printf("All SolarInputData Views successfully allocated on device.\n");
 }
 
-void CombinedRoadDataTypeAllocateViews(int N_LUN, int N_RAD,
+void CombinedRoadDataTypeAllocateViews(int N_LUN, int N_RAD_BAND,
                                        CombinedRoadDataType &combineRoad) {
-  ALLOCATE_VIEW(combineRoad.DownwellingShortRad, Array3DR8, N_LUN, N_RAD,
-                N_RADTYPE);
-  ALLOCATE_VIEW(combineRoad.SnowAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(combineRoad.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD,
-                N_RADTYPE);
+  ALLOCATE_VIEW(combineRoad.DownwellingShortRad, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(combineRoad.SnowAlbedo, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(combineRoad.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
 }
 
-void RoadDataTypeAllocateViews(int N_LUN, int N_RAD, RoadDataType &road) {
-  ALLOCATE_VIEW(road.SnowAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(road.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(road.BaseAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(road.ReflectedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(road.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+void RoadDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoadDataType &road) {
+  ALLOCATE_VIEW(road.SnowAlbedo, Array3DR8, N_LUN, N_RAD_BAND, N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(road.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(road.BaseAlbedo, Array3DR8, N_LUN, N_RAD_BAND, N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(road.ReflectedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(road.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
 }
 
-void WallDataTypeAllocateViews(int N_LUN, int N_RAD, WallDataType &wall) {
-  ALLOCATE_VIEW(wall.DownwellingShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(wall.BaseAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(wall.ReflectedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(wall.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+void WallDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, WallDataType &wall) {
+  ALLOCATE_VIEW(wall.DownwellingShortRad, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(wall.BaseAlbedo, Array3DR8, N_LUN, N_RAD_BAND, N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(wall.ReflectedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(wall.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
 }
 
-void RoofDataTypeAllocateViews(int N_LUN, int N_RAD, RoofDataType &roof) {
-  ALLOCATE_VIEW(roof.SnowAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(roof.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(roof.BaseAlbedo, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(roof.ReflectedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
-  ALLOCATE_VIEW(roof.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD, N_RADTYPE);
+void RoofDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoofDataType &roof) {
+  ALLOCATE_VIEW(roof.SnowAlbedo, Array3DR8, N_LUN, N_RAD_BAND, N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(roof.AlbedoWithSnowEffects, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(roof.BaseAlbedo, Array3DR8, N_LUN, N_RAD_BAND, N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(roof.ReflectedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
+  ALLOCATE_VIEW(roof.AbsorbedShortRad, Array3DR8, N_LUN, N_RAD_BAND,
+                N_RAD_BANDTYPE);
 }
 
 // Method Definition: Contains the heavy lifting of allocation
 void UrbanDataAllocator::allocate_all_views() const {
   int N_LUN = data_bundle.N_LUN;
-  int N_RAD = data_bundle.N_RAD;
+  int N_RAD_BAND = data_bundle.N_RAD_BAND;
 
   printf("Starting device memory allocation for %d land units and %d bands.\n",
-         N_LUN, N_RAD);
+         N_LUN, N_RAD_BAND);
 
   CanyonGeometryAllocateViews(N_LUN, data_bundle.geometry);
-  SolarInputDataAllocateViews(N_LUN, N_RAD, data_bundle.input);
-  CombinedRoadDataTypeAllocateViews(N_LUN, N_RAD, data_bundle.CombinedRoad);
-  WallDataTypeAllocateViews(N_LUN, N_RAD, data_bundle.SunlitWall);
-  WallDataTypeAllocateViews(N_LUN, N_RAD, data_bundle.ShadedWall);
-  CombinedRoadDataTypeAllocateViews(N_LUN, N_RAD, data_bundle.CombinedRoad);
-  RoadDataTypeAllocateViews(N_LUN, N_RAD, data_bundle.ImperviousRoad);
-  RoadDataTypeAllocateViews(N_LUN, N_RAD, data_bundle.PerviousRoad);
-  RoofDataTypeAllocateViews(N_LUN, N_RAD, data_bundle.Roof);
+  SolarInputDataAllocateViews(N_LUN, N_RAD_BAND, data_bundle.input);
+  CombinedRoadDataTypeAllocateViews(N_LUN, N_RAD_BAND,
+                                    data_bundle.CombinedRoad);
+  WallDataTypeAllocateViews(N_LUN, N_RAD_BAND, data_bundle.SunlitWall);
+  WallDataTypeAllocateViews(N_LUN, N_RAD_BAND, data_bundle.ShadedWall);
+  CombinedRoadDataTypeAllocateViews(N_LUN, N_RAD_BAND,
+                                    data_bundle.CombinedRoad);
+  RoadDataTypeAllocateViews(N_LUN, N_RAD_BAND, data_bundle.ImperviousRoad);
+  RoadDataTypeAllocateViews(N_LUN, N_RAD_BAND, data_bundle.PerviousRoad);
+  RoofDataTypeAllocateViews(N_LUN, N_RAD_BAND, data_bundle.Roof);
 
   printf("All primary Views successfully allocated on device.\n");
 }
@@ -113,7 +126,7 @@ void print_view_1d(const ViewType &view, const std::string &name = "") {
 void UrbanDataAllocator::initialize_canyon_geometry() const {
 
   int N_LUN = data_bundle.N_LUN;
-  int N_RAD = data_bundle.N_RAD;
+  int N_RAD_BAND = data_bundle.N_RAD_BAND;
 
   const Real HWR_TBD = 4.80000019073486;
   // const Real HWR_HD  = 1.60000002384186;
@@ -153,7 +166,7 @@ void UrbanDataAllocator::initialize_canyon_geometry() const {
 void UrbanDataAllocator::initialize_properties() const {
 
   int N_LUN = data_bundle.N_LUN;
-  int N_RAD = data_bundle.N_RAD;
+  int N_RAD_BAND = data_bundle.N_RAD_BAND;
 
   const Real ALB_IMPROAD_DIR = 0.230000004172325;
   const Real ALB_IMPROAD_DIF = ALB_IMPROAD_DIR;
@@ -178,7 +191,7 @@ void UrbanDataAllocator::initialize_properties() const {
         Array3DR8 alb_shdwall = data_bundle.ShadedWall.BaseAlbedo;
         // Array2DR8 alb_shdwall_dif = data_bundle.ShadedWall.BaseAlbedo.dif;
 
-        for (int ib = 0; ib < N_RAD; ib++) {
+        for (int ib = 0; ib < N_RAD_BAND; ib++) {
           alb_roof(c, ib, 0) = ALB_ROOF_DIR;
           alb_roof(c, ib, 1) = ALB_ROOF_DIF;
 
