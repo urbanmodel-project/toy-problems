@@ -7,14 +7,15 @@
 #include <iostream>
 
 namespace URBANXX {
-NetLongwaveRoad::NetLongwaveRoad(CanyonGeometryData *geometry, RoadDataType &roadData,
-                           Real roadWeight)
+NetLongwaveRoad::NetLongwaveRoad(CanyonGeometryData *geometry,
+                                 RoadDataType &roadData, Real roadWeight)
     : Hwr(geometry->CanyonHwr),
       ViewFactorSkyFromRoad(geometry->ViewFactorSkyFromRoad),
       ViewFactorWallFromRoad(geometry->ViewFactorWallFromRoad),
       RoadData(roadData), Weight(roadWeight) {}
 
-NetLongwaveWall::NetLongwaveWall(CanyonGeometryData *geometry, WallDataType &wallData)
+NetLongwaveWall::NetLongwaveWall(CanyonGeometryData *geometry,
+                                 WallDataType &wallData)
     : Hwr(geometry->CanyonHwr),
       ViewFactorSkyFromWall(geometry->ViewFactorSkyFromWall),
       ViewFactorRoadFromWall(geometry->ViewFactorRoadFromWall),
@@ -22,11 +23,73 @@ NetLongwaveWall::NetLongwaveWall(CanyonGeometryData *geometry, WallDataType &wal
       WallData(wallData) {}
 
 UrbanLongwave::UrbanLongwave(UrbanSharedDataBundle &bundle)
-    : data_bundle(bundle),
-      SunlitWallLwave(&bundle.geometry, bundle.SunlitWall),
+    : data_bundle(bundle), SunlitWallLwave(&bundle.geometry, bundle.SunlitWall),
       ShadeWallLwave(&bundle.geometry, bundle.ShadedWall),
       ImperviousRoadLwave(&bundle.geometry, bundle.ImperviousRoad,
-                             1.0 - 0.16666667163372040),
+                          1.0 - 0.16666667163372040),
       PerviousRoadLwave(&bundle.geometry, bundle.PerviousRoad,
-                           0.16666667163372040) {}
+                        0.16666667163372040) {}
+
+KOKKOS_FUNCTION
+void NetLongwaveRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
+                                          RadOutput &out,
+                                          bool scale_by_weight) const {
+
+  Real emiss = RoadData.Emissivity(idx.c);
+  Real Temp = RoadData.Temperature(idx.c);
+
+  out.Abs = emiss * InRad;
+  out.Ref = (1.0 - emiss) * InRad;
+  out.Emi = emiss * std::pow(Temp, 4.0);
+  if (scale_by_weight) {
+    out.Abs *= Weight;
+    out.Ref *= Weight;
+    out.Emi *= Weight;
+  }
 }
+
+KOKKOS_FUNCTION
+void NetLongwaveRoad::ComputeRadByComponent(RadIndices idx, Real Data,
+                                            RadRefComponents &ref,
+                                            bool scale_by_weight) const {
+
+  Real vf_sr = ViewFactorSkyFromRoad(idx.c);
+  Real vf_wr = ViewFactorWallFromRoad(idx.c);
+
+  ref.ToSky = Data * vf_sr;
+  ref.ToSunwall = Data * vf_wr;
+  ref.ToShadewall = Data * vf_wr;
+  ref.ToOtherwall = 0.0;
+  ref.ToRoad = 0.0;
+
+  if (scale_by_weight) {
+    ref.ToSky *= Weight;
+    ref.ToSunwall *= Weight;
+    ref.ToShadewall *= Weight;
+  }
+}
+
+KOKKOS_FUNCTION
+void NetLongwaveRoad::ComputeRefRadByComponent(RadIndices idx, Real InRad,
+                                               RadRefComponents &ref,
+                                               bool scale_by_weight) const {
+
+  Real emiss = RoadData.Emissivity(idx.c);
+  Real Data = (1.0 - emiss) * InRad;
+
+  ComputeRadByComponent(idx, Data, ref, scale_by_weight);
+}
+
+KOKKOS_FUNCTION
+void NetLongwaveRoad::ComputeEmiRadByComponent(RadIndices idx, Real InRad,
+                                               RadRefComponents &ref,
+                                               bool scale_by_weight) const {
+
+  Real emiss = RoadData.Emissivity(idx.c);
+  Real Temp = RoadData.Temperature(idx.c);
+  Real Data = emiss * std::pow(Temp, 4.0);
+
+  ComputeRadByComponent(idx, Data, ref, scale_by_weight);
+}
+
+} // namespace URBANXX

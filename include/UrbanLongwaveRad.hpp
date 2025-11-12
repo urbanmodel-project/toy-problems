@@ -18,6 +18,16 @@ private:
 
 public:
   NetLongwaveRoad(CanyonGeometryData *geometry, RoadDataType &roadData, Real);
+  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out,
+                           bool scale_by_weight) const;
+  void ComputeRadByComponent(RadIndices idx, Real InRad, RadRefComponents &ref,
+                             bool scale_by_weight) const;
+  void ComputeRefRadByComponent(RadIndices idx, Real InRad,
+                                RadRefComponents &ref,
+                                bool scale_by_weight) const;
+  void ComputeEmiRadByComponent(RadIndices idx, Real InRad,
+                                RadRefComponents &ref,
+                                bool scale_by_weight) const;
 };
 
 class NetLongwaveWall {
@@ -39,6 +49,7 @@ private:
   NetLongwaveWall ShadeWallLwave;
   NetLongwaveRoad ImperviousRoadLwave;
   NetLongwaveRoad PerviousRoadLwave;
+
 public:
   UrbanLongwave(UrbanSharedDataBundle &bundle);
 };
