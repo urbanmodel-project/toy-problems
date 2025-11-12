@@ -48,11 +48,11 @@ int main(int argc, char* argv[]) {
         UrbanLongwave longwave_physics(simulation_bundle);
 
         if (1) {
-            albedo_physics.set_solar_inputs();
-            albedo_physics.compute_incident_radiation();
-            albedo_physics.compute_snow_albedo();
-            albedo_physics.compute_combined_albedo();
-            albedo_physics.compute_net_solar();
+            albedo_physics.setSolarInputs();
+            albedo_physics.computeIncidentRadiation();
+            albedo_physics.computeSnowAlbedo();
+            albedo_physics.computeCombinedAlbedo();
+            albedo_physics.computeNetSolar();
         }
 
     }

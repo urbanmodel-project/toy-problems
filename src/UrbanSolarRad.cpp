@@ -139,7 +139,7 @@ void print_view_3d(const ViewType &view, const std::string &name = "") {
   }
 }
 
-void UrbanAlbedo::set_solar_inputs() const {
+void UrbanAlbedo::setSolarInputs() {
 
   std::cout << "Setting solar inputs\n";
 
@@ -159,7 +159,7 @@ void UrbanAlbedo::set_solar_inputs() const {
     print_view_1d(Coszen);
 }
 
-void UrbanAlbedo::compute_incident_radiation() const {
+void UrbanAlbedo::computeIncidentRadiation() {
   std::cout << "In compute_incident_radiation\n";
 
   const Real rpi = M_PI;
@@ -223,7 +223,7 @@ void UrbanAlbedo::compute_incident_radiation() const {
   }
 }
 
-void UrbanAlbedo::compute_snow_albedo() const {
+void UrbanAlbedo::computeSnowAlbedo() {
   std::cout << "In compute_snow_albedo\n";
 
   const Real rpi = M_PI;
@@ -264,7 +264,7 @@ void UrbanAlbedo::compute_snow_albedo() const {
       });
 }
 
-void UrbanAlbedo::compute_combined_albedo() const {
+void UrbanAlbedo::computeCombinedAlbedo() {
   std::cout << "In compute_combined_albedo\n";
 
   const Real rpi = M_PI;
@@ -331,7 +331,7 @@ void UrbanAlbedo::compute_combined_albedo() const {
   }
 }
 
-void UrbanAlbedo::compute_net_solar() const {
+void UrbanAlbedo::computeNetSolar() {
   std::cout << "In compute_net_solar\n";
 
   int N_LUN = data_bundle.N_LUN;

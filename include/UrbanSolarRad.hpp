@@ -51,11 +51,11 @@ private:
 public:
   UrbanAlbedo(UrbanSharedDataBundle &bundle);
 
-  void set_solar_inputs() const;
-  void compute_incident_radiation() const;
-  void compute_snow_albedo() const;
-  void compute_combined_albedo() const;
-  void compute_net_solar() const;
+  void setSolarInputs();
+  void computeIncidentRadiation();
+  void computeSnowAlbedo();
+  void computeCombinedAlbedo();
+  void computeNetSolar();
 };
 } // namespace URBANXX
 
