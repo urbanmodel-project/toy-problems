@@ -92,4 +92,52 @@ void NetLongwaveRoad::ComputeEmiRadByComponent(RadIndices idx, Real InRad,
   ComputeRadByComponent(idx, Data, ref, scale_by_weight);
 }
 
+KOKKOS_FUNCTION
+void NetLongwaveWall::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
+                                          RadOutput &out) const {
+
+  Real emiss = WallData.Emissivity(idx.c);
+  Real Temp = WallData.Temperature(idx.c);
+
+  out.Abs = emiss * InRad;
+  out.Ref = (1.0 - emiss) * InRad;
+  out.Emi = emiss * std::pow(Temp, 4.0);
+}
+
+KOKKOS_FUNCTION
+void NetLongwaveWall::ComputeRadByComponent(RadIndices idx, Real Data,
+                                            RadRefComponents &ref) const {
+
+  Real vf_sw = ViewFactorSkyFromWall(idx.c);
+  Real vf_rw = ViewFactorRoadFromWall(idx.c);
+  Real vf_ww = ViewFactorOtherWallFromWall(idx.c);
+
+  ref.ToSky = Data * vf_sw;
+  ref.ToRoad = Data * vf_rw;
+  ref.ToOtherwall = Data * vf_ww;
+  ref.ToSunwall = 0.0;
+  ref.ToShadewall = 0.0;
+}
+
+KOKKOS_FUNCTION
+void NetLongwaveWall::ComputeRefRadByComponent(RadIndices idx, Real InRad,
+                                               RadRefComponents &ref) const {
+
+  Real emiss = WallData.Emissivity(idx.c);
+  Real Data = (1.0 - emiss) * InRad;
+
+  ComputeRadByComponent(idx, Data, ref);
+}
+
+KOKKOS_FUNCTION
+void NetLongwaveWall::ComputeEmiRadByComponent(RadIndices idx, Real InRad,
+                                               RadRefComponents &ref) const {
+
+  Real emiss = WallData.Emissivity(idx.c);
+  Real Temp = WallData.Temperature(idx.c);
+  Real Data = emiss * std::pow(Temp, 4.0);
+
+  ComputeRadByComponent(idx, Data, ref);
+}
+
 } // namespace URBANXX
