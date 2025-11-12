@@ -30,6 +30,7 @@ UrbanAlbedo::UrbanAlbedo(UrbanSharedDataBundle &bundle)
       PerviousRoadNetSolar(&bundle.geometry, bundle.PerviousRoad,
                            0.16666667163372040) {}
 
+KOKKOS_FUNCTION
 void NetSolarRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad, Real *AbsRad,
                                        Real *RefRad,
                                        bool scale_by_weight) const {
@@ -44,6 +45,7 @@ void NetSolarRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad, Real *AbsRad,
   }
 }
 
+KOKKOS_FUNCTION
 void NetSolarRoad::ComputeRefRadByComponent(RadIndices idx, Real InRad,
                                             Real *RefRadToSky,
                                             Real *RefRadToSunwall,
@@ -67,6 +69,7 @@ void NetSolarRoad::ComputeRefRadByComponent(RadIndices idx, Real InRad,
   }
 }
 
+KOKKOS_FUNCTION
 void NetSolarWall::ComputeAbsAndRefRad(RadIndices idx, Real InRad, Real *AbsRad,
                                        Real *RefRad) const {
 
@@ -76,6 +79,7 @@ void NetSolarWall::ComputeAbsAndRefRad(RadIndices idx, Real InRad, Real *AbsRad,
   *RefRad = albedo * InRad;
 }
 
+KOKKOS_FUNCTION
 void NetSolarWall::ComputeRefRadByComponent(RadIndices idx, Real InRad,
                                             Real *RefRadToSky,
                                             Real *RefRadToRoad,
