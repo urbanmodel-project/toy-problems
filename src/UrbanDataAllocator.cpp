@@ -45,8 +45,8 @@ void AtmosphereInputDataAllocateViews(int N_LUN, int N_RAD_BAND,
   ALLOCATE_VIEW(solar.FracSnowH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(solar.FracSnow, Array1DR8, N_LUN);
 
-  ALLOCATE_VIEW(solar.DownwellingLonwgRadH, HostArray1DR8, N_LUN);
-  ALLOCATE_VIEW(solar.DownwellingLonwgRad, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(solar.DownwellingLongRadH, HostArray1DR8, N_LUN);
+  ALLOCATE_VIEW(solar.DownwellingLongRad, Array1DR8, N_LUN);
 
   printf("All AtmosphereInputData Views successfully allocated on host and "
          "device.\n");
@@ -73,6 +73,8 @@ void RoadDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoadDataType &road) {
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(road.Emissivity, Array1DR8, N_LUN)
   ALLOCATE_VIEW(road.Temperature, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(road.NetLongRad, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(road.UpwardLongRad, Array1DR8, N_LUN)
 }
 
 void WallDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, WallDataType &wall) {
@@ -85,6 +87,8 @@ void WallDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, WallDataType &wall) {
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(wall.Emissivity, Array1DR8, N_LUN)
   ALLOCATE_VIEW(wall.Temperature, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(wall.NetLongRad, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(wall.UpwardLongRad, Array1DR8, N_LUN)
 }
 
 void RoofDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoofDataType &roof) {
@@ -98,6 +102,8 @@ void RoofDataTypeAllocateViews(int N_LUN, int N_RAD_BAND, RoofDataType &roof) {
                 N_RAD_BANDTYPE);
   ALLOCATE_VIEW(roof.Emissivity, Array1DR8, N_LUN)
   ALLOCATE_VIEW(roof.Temperature, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(roof.NetLongRad, Array1DR8, N_LUN)
+  ALLOCATE_VIEW(roof.UpwardLongRad, Array1DR8, N_LUN)
 }
 
 // Method Definition: Contains the heavy lifting of allocation

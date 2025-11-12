@@ -37,8 +37,8 @@ struct AtmosphereInputData {
   HostArray1DR8 FracSnowH; // fraction of ground covered by snow
   Array1DR8 FracSnow;      // fraction of ground covered by snow
 
-  HostArray1DR8 DownwellingLonwgRadH; // downwelling longwave radiation on host
-  Array1DR8 DownwellingLonwgRad; // downwelling longwave radiation on device
+  HostArray1DR8 DownwellingLongRadH; // downwelling longwave radiation on host
+  Array1DR8 DownwellingLongRad;      // downwelling longwave radiation on device
 };
 
 struct CombinedRoadDataType {
@@ -58,6 +58,8 @@ struct RoadDataType {
                                // per unit incident flux
   Array1DR8 Emissivity;        // emissivity
   Array1DR8 Temperature;       // temperature
+  Array1DR8 NetLongRad;        // net longwave radiation
+  Array1DR8 UpwardLongRad;     // upward longwave radiation
 };
 
 struct WallDataType {
@@ -71,6 +73,8 @@ struct WallDataType {
                               // per unit incident flux
   Array1DR8 Emissivity;       // emissivity
   Array1DR8 Temperature;      // temperature
+  Array1DR8 NetLongRad;       // net longwave radiation
+  Array1DR8 UpwardLongRad;    // upward longwave radiation
 };
 
 struct RoofDataType {
@@ -83,6 +87,8 @@ struct RoofDataType {
                                // per unit incident flux
   Array1DR8 Emissivity;        // emissivity
   Array1DR8 Temperature;       // temperature
+  Array1DR8 NetLongRad;        // net longwave radiation
+  Array1DR8 UpwardLongRad;     // upward longwave radiation
 };
 
 // --- The Master Bundle passed between all classes ---
