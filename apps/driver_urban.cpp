@@ -3,6 +3,7 @@
 #include <UrbanData.hpp>
 #include <UrbanDataAllocator.hpp>
 #include <UrbanSolarRad.hpp>
+#include <UrbanLongwaveRad.hpp>
 #include <iostream>
 
 using namespace URBANXX;
@@ -43,6 +44,7 @@ int main(int argc, char* argv[]) {
         allocator.initialize_properties();
 
         UrbanAlbedo albedo_physics(simulation_bundle);
+        UrbanLongwave longwave_physics(simulation_bundle);
 
         if (1) {
             albedo_physics.set_solar_inputs();

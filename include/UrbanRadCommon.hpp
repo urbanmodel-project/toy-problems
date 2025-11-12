@@ -24,5 +24,5 @@ struct RadRefComponents {
   Real ToOtherwall;
 };
 
-}
+} // namespace URBANXX
 #endif
