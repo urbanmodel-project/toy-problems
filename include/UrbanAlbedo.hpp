@@ -12,6 +12,19 @@ struct RadIndices {
   int rtype;
 };
 
+struct RadOutput {
+  Real Abs;
+  Real Ref;
+};
+
+struct RadRefComponents {
+  Real ToSky;
+  Real ToRoad;
+  Real ToSunwall;
+  Real ToShadewall;
+  Real ToOtherwall;
+};
+
 class NetSolarRoad {
 private:
   Array1DR8 Hwr;
@@ -22,10 +35,10 @@ private:
 
 public:
   NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData, Real);
-  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, Real *AbsRad,
-                           Real *RefRad, bool scale_by_weight) const;
-  void ComputeRefRadByComponent(RadIndices idx, Real InRad, Real *RefRadToSky,
-                                Real *RefRadToSunwall, Real *RefRadToShadwall,
+  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out,
+                           bool scale_by_weight) const;
+  void ComputeRefRadByComponent(RadIndices idx, Real InRad,
+                                RadRefComponents &ref,
                                 bool scale_by_weight) const;
 };
 
@@ -39,11 +52,9 @@ private:
 
 public:
   NetSolarWall(CanyonGeometryData *geometry, WallDataType &wallData);
-  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, Real *AbsRad,
-                           Real *RefRad) const;
-  void ComputeRefRadByComponent(RadIndices idx, Real InRad, Real *RefRadToSky,
-                                Real *RefRadToRoad,
-                                Real *RefRadToOtherWall) const;
+  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
+  void ComputeRefRadByComponent(RadIndices idx, Real InRad,
+                                RadRefComponents &ref) const;
 };
 
 class UrbanAlbedo {
