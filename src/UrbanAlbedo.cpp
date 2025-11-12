@@ -366,7 +366,7 @@ void UrbanAlbedo::compute_net_solar() const {
               Real improad_r_shadewall, improad_r_shadewall_by_wt;
 
               ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                  c, ib, srad_road(c, ib, rtype), rtype, &improad_a, &improad_r,
+                  c, ib, rtype, srad_road(c, ib, rtype), &improad_a, &improad_r,
                   !scale_by_weight);
 
               ImperviousRoadNetSolar.ComputeAbsAndRefRad(
