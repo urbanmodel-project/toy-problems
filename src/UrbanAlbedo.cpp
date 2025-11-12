@@ -340,6 +340,16 @@ void UrbanAlbedo::compute_net_solar() const {
               data_bundle.SunlitWall.DownwellingShortRad;
           Array3DR8 srad_shadewall = data_bundle.ShadedWall.DownwellingShortRad;
 
+          Array3DR8 sabs_improad = data_bundle.ImperviousRoad.AbsorbedShortRad;
+          Array3DR8 sabs_perroad = data_bundle.PerviousRoad.AbsorbedShortRad;
+          Array3DR8 sabs_sunwall = data_bundle.SunlitWall.AbsorbedShortRad;
+          Array3DR8 sabs_shadewall = data_bundle.ShadedWall.AbsorbedShortRad;
+
+          Array3DR8 sref_improad = data_bundle.ImperviousRoad.ReflectedShortRad;
+          Array3DR8 sref_perroad = data_bundle.PerviousRoad.ReflectedShortRad;
+          Array3DR8 sref_sunwall = data_bundle.SunlitWall.ReflectedShortRad;
+          Array3DR8 sref_shadewall = data_bundle.ShadedWall.ReflectedShortRad;
+
           Array1DR8 hwr = data_bundle.geometry.CanyonHwr;
 
           bool scale_by_weight = true;
@@ -431,15 +441,15 @@ void UrbanAlbedo::compute_net_solar() const {
               // Cummulative absorbed and reflected radiation for the four
               // surfaces
 
-              Real sabs_improad = improad_a;
-              Real sabs_perroad = perroad_a;
-              Real sabs_sunwall = sunwall_a;
-              Real sabs_shadewall = shadewall_a;
+              sabs_improad(c, ib, rtype) = improad_a;
+              sabs_perroad(c, ib, rtype) = perroad_a;
+              sabs_sunwall(c, ib, rtype) = sunwall_a;
+              sabs_shadewall(c, ib, rtype) = shadewall_a;
 
-              Real sref_improad = improad_r;
-              Real sref_perroad = perroad_r;
-              Real sref_sunwall = sunwall_r;
-              Real sref_shadewall = shadewall_r;
+              sref_improad(c, ib, rtype) = improad_r;
+              sref_perroad(c, ib, rtype) = perroad_r;
+              sref_sunwall(c, ib, rtype) = sunwall_r;
+              sref_shadewall(c, ib, rtype) = shadewall_r;
 
               const int max_iter = 50;
               for (int iter = 0; iter < max_iter; iter++) {
@@ -478,10 +488,10 @@ void UrbanAlbedo::compute_net_solar() const {
                     &shadewall_r);
 
                 // step (2)
-                sabs_improad += improad_a;
-                sabs_perroad += perroad_a;
-                sabs_sunwall += sunwall_a;
-                sabs_shadewall += shadewall_a;
+                sabs_improad(c, ib, rtype) += improad_a;
+                sabs_perroad(c, ib, rtype) += perroad_a;
+                sabs_sunwall(c, ib, rtype) += sunwall_a;
+                sabs_shadewall(c, ib, rtype) += shadewall_a;
 
                 // step (3)
                 ImperviousRoadNetSolar.ComputeRefRadByComponent(
@@ -509,10 +519,10 @@ void UrbanAlbedo::compute_net_solar() const {
                     &shadewall_r_road, &shadewall_r_sunwall);
 
                 // step (4)
-                sref_improad += improad_r;
-                sref_perroad += perroad_r;
-                sref_sunwall += sunwall_r;
-                sref_shadewall += shadewall_r;
+                sref_improad(c, ib, rtype) += improad_r;
+                sref_perroad(c, ib, rtype) += perroad_r;
+                sref_sunwall(c, ib, rtype) += sunwall_r;
+                sref_shadewall(c, ib, rtype) += shadewall_r;
 
                 Real crit = std::max({road_a, sunwall_a, shadewall_a});
                 const Real errcrit = 0.00001;
