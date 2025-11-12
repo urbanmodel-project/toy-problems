@@ -1,5 +1,5 @@
-#ifndef URBAN_ALBEDO_HPP
-#define URBAN_ALBEDO_HPP
+#ifndef URBAN_SOLAR_RAD_HPP
+#define URBAN_SOLAR_RAD_HPP
 
 #include <DataTypes.hpp>
 #include <Kokkos_Core.hpp>

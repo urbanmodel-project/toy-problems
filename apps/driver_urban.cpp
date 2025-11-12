@@ -2,7 +2,7 @@
 #include <Kokkos_Core.hpp>
 #include <UrbanData.hpp>
 #include <UrbanDataAllocator.hpp>
-#include <UrbanAlbedo.hpp>
+#include <UrbanSolarRad.hpp>
 #include <iostream>
 
 using namespace URBANXX;

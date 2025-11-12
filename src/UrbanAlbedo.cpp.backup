@@ -1,5 +1,5 @@
 #include <Kokkos_Core.hpp>
-#include <UrbanAlbedo.hpp>
+#include <UrbanSolarRad.hpp>
 #include <UrbanData.hpp>
 #include <cmath>
 #include <iomanip>
