@@ -416,12 +416,12 @@ void UrbanAlbedo::computeNetSolar() {
               Real StotForSunwall = SradSunwall(c, ib, rtype);
 
               RadOutput SunwallOut;
-              RadRefComponents sunwall_ref;
+              RadRefComponents SunwallRef;
 
               SunlitWallNetSolar.ComputeAbsAndRefRad(idx, StotForSunwall,
                                                      SunwallOut);
               SunlitWallNetSolar.ComputeRefRadByComponent(
-                  idx, SradSunwall(c, ib, rtype), sunwall_ref);
+                  idx, SradSunwall(c, ib, rtype), SunwallRef);
 
               // Shadedwall
               Real shadewall_a, shadewall_r;
@@ -429,12 +429,12 @@ void UrbanAlbedo::computeNetSolar() {
               Real StotForShadewall = SradShadewall(c, ib, rtype);
 
               RadOutput ShadewallOut;
-              RadRefComponents shadewall_ref;
+              RadRefComponents ShadewallRef;
 
               ShadeWallNetSolar.ComputeAbsAndRefRad(idx, StotForSunwall,
                                                     ShadewallOut);
               ShadeWallNetSolar.ComputeRefRadByComponent(idx, StotForShadewall,
-                                                         shadewall_ref);
+                                                         ShadewallRef);
 
               // Cummulative absorbed and reflected radiation for the four
               // surfaces
@@ -453,7 +453,7 @@ void UrbanAlbedo::computeNetSolar() {
               for (int iter = 0; iter < max_iter; iter++) {
                 // step(1)
                 StotForRoad =
-                    (sunwall_ref.ToRoad + shadewall_ref.ToRoad) * hwr(c);
+                    (SunwallRef.ToRoad + ShadewallRef.ToRoad) * hwr(c);
 
                 ImperviousRoadNetSolar.ComputeAbsAndRefRad(
                     idx, StotForRoad, ImpRoadOut, !scale_by_weight);
@@ -471,12 +471,12 @@ void UrbanAlbedo::computeNetSolar() {
                 RoadRef = ImpRoadOutByWt.Ref + PerRoadOutByWt.Ref;
 
                 StotForSunwall =
-                    RoadRefToSunwall / hwr(c) + shadewall_ref.ToSunwall;
+                    RoadRefToSunwall / hwr(c) + ShadewallRef.ToSunwall;
                 SunlitWallNetSolar.ComputeAbsAndRefRad(idx, StotForSunwall,
                                                        SunwallOut);
 
                 StotForShadewall =
-                    RoadRefToShadewall / hwr(c) + sunwall_ref.ToShadewall;
+                    RoadRefToShadewall / hwr(c) + SunwallRef.ToShadewall;
                 ShadeWallNetSolar.ComputeAbsAndRefRad(idx, StotForShadewall,
                                                       ShadewallOut);
 
@@ -500,10 +500,10 @@ void UrbanAlbedo::computeNetSolar() {
                     ImpRoadRefByWt.ToShadewall + PerRoadRefByWt.ToShadewall;
 
                 SunlitWallNetSolar.ComputeRefRadByComponent(idx, StotForSunwall,
-                                                            sunwall_ref);
+                                                            SunwallRef);
 
                 ShadeWallNetSolar.ComputeRefRadByComponent(
-                    idx, StotForShadewall, shadewall_ref);
+                    idx, StotForShadewall, ShadewallRef);
 
                 // step (4)
                 RefImproad(c, ib, rtype) += ImpRoadOut.Ref;

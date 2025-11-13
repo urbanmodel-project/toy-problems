@@ -246,6 +246,8 @@ void UrbanDataAllocator::initialize_states() {
 
   int N_LUN = data_bundle.N_LUN;
   const Real TEMP_INIT = 274.0;
+  const Real TEMP_WALL_INIT = 292.0;
+  const Real TEMP_ROAD_INIT = 274.0;
 
   Kokkos::parallel_for(
       "SetParameters", N_LUN, KOKKOS_LAMBDA(const int c) {
@@ -256,10 +258,10 @@ void UrbanDataAllocator::initialize_states() {
         Array1DR8 T_shdwall = data_bundle.ShadedWall.Temperature;
 
         T_roof(c) = TEMP_INIT;
-        T_improad(c) = TEMP_INIT;
-        T_perroad(c) = TEMP_INIT;
-        T_sunwall(c) = TEMP_INIT;
-        T_shdwall(c) = TEMP_INIT;
+        T_improad(c) = TEMP_ROAD_INIT;
+        T_perroad(c) = TEMP_ROAD_INIT;
+        T_sunwall(c) = TEMP_WALL_INIT;
+        T_shdwall(c) = TEMP_WALL_INIT;
       });
 }
 

@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
 
         if (1) {
             longwave_physics.setLongwaveInputs();
+            longwave_physics.computeNetLongwave();
 
             albedo_physics.setSolarInputs();
             albedo_physics.computeIncidentRadiation();
