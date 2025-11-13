@@ -34,8 +34,7 @@ UrbanLongwave::UrbanLongwave(UrbanSharedDataBundle &bundle)
 
 KOKKOS_FUNCTION
 void NetLongwaveRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
-                                          RadOutput &out,
-                                          bool scale_by_weight) const {
+                                          RadOutput &out) const {
 
   Real emiss = RoadData.Emissivity(idx.c);
   Real Temp = RoadData.Temperature(idx.c);
@@ -43,17 +42,15 @@ void NetLongwaveRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
   out.Abs = emiss * InRad;
   out.Ref = (1.0 - emiss) * InRad;
   out.Emi = emiss * STEBOL * std::pow(Temp, 4.0);
-  if (scale_by_weight) {
-    out.Abs *= Weight;
-    out.Ref *= Weight;
-    out.Emi *= Weight;
-  }
+
+  out.AbsByWt = out.Abs * Weight;
+  out.RefByWt = out.Ref * Weight;
+  out.EmiByWt = out.Emi * Weight;
 }
 
 KOKKOS_FUNCTION
 void NetLongwaveRoad::ComputeRadByComponent(RadIndices idx, Real Data,
-                                            RadRefComponents &ref,
-                                            bool scale_by_weight) const {
+                                            RadRefComponents &ref) const {
 
   Real vf_sr = ViewFactorSkyFromRoad(idx.c);
   Real vf_wr = ViewFactorWallFromRoad(idx.c);
@@ -64,34 +61,32 @@ void NetLongwaveRoad::ComputeRadByComponent(RadIndices idx, Real Data,
   ref.ToOtherwall = 0.0;
   ref.ToRoad = 0.0;
 
-  if (scale_by_weight) {
-    ref.ToSky *= Weight;
-    ref.ToSunwall *= Weight;
-    ref.ToShadewall *= Weight;
-  }
+  ref.ToSkyByWt = ref.ToSky * Weight;
+  ref.ToSunwallByWt = ref.ToSunwall * Weight;
+  ref.ToShadewallByWt = ref.ToShadewall * Weight;
+  ref.ToOtherwallByWt = ref.ToOtherwall * Weight;
+  ref.ToRoadByWt = ref.ToRoad * Weight;
 }
 
 KOKKOS_FUNCTION
 void NetLongwaveRoad::ComputeRefRadByComponent(RadIndices idx, Real InRad,
-                                               RadRefComponents &ref,
-                                               bool scale_by_weight) const {
+                                               RadRefComponents &ref) const {
 
   Real emiss = RoadData.Emissivity(idx.c);
   Real Data = (1.0 - emiss) * InRad;
 
-  ComputeRadByComponent(idx, Data, ref, scale_by_weight);
+  ComputeRadByComponent(idx, Data, ref);
 }
 
 KOKKOS_FUNCTION
 void NetLongwaveRoad::ComputeEmiRadByComponent(RadIndices idx, Real InRad,
-                                               RadRefComponents &ref,
-                                               bool scale_by_weight) const {
+                                               RadRefComponents &ref) const {
 
   Real emiss = RoadData.Emissivity(idx.c);
   Real Temp = RoadData.Temperature(idx.c);
   Real Data = emiss * STEBOL * std::pow(Temp, 4.0);
 
-  ComputeRadByComponent(idx, Data, ref, scale_by_weight);
+  ComputeRadByComponent(idx, Data, ref);
 }
 
 KOKKOS_FUNCTION
@@ -104,6 +99,10 @@ void NetLongwaveWall::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
   out.Abs = emiss * InRad;
   out.Ref = (1.0 - emiss) * InRad;
   out.Emi = emiss * STEBOL * std::pow(Temp, 4.0);
+
+  out.AbsByWt = out.Abs;
+  out.RefByWt = out.Ref;
+  out.EmiByWt = out.Emi;
 }
 
 KOKKOS_FUNCTION
@@ -119,6 +118,12 @@ void NetLongwaveWall::ComputeRadByComponent(RadIndices idx, Real Data,
   ref.ToOtherwall = Data * vf_ww;
   ref.ToSunwall = 0.0;
   ref.ToShadewall = 0.0;
+
+  ref.ToSkyByWt = ref.ToSky;
+  ref.ToSunwallByWt = ref.ToSunwall;
+  ref.ToShadewallByWt = ref.ToShadewall;
+  ref.ToOtherwallByWt = ref.ToOtherwall;
+  ref.ToRoadByWt = ref.ToRoad;
 }
 
 KOKKOS_FUNCTION
@@ -182,8 +187,6 @@ void UrbanLongwave::computeNetLongwave() {
         Array1DR8 UpSunwall = data_bundle.SunlitWall.UpwardLongRad;
         Array1DR8 UpShadewall = data_bundle.ShadedWall.UpwardLongRad;
 
-        bool scale_by_weight = true;
-
         RadIndices idx{c, 0, 0};
 
         Real LtotForRoad = DwLong(c) * vf_sr(c);
@@ -191,27 +194,18 @@ void UrbanLongwave::computeNetLongwave() {
         // +++++++++++++++++++++++++++++++++++++++++++++++++
         // Impervious road
         // +++++++++++++++++++++++++++++++++++++++++++++++++
-        RadOutput ImpRoadOut, ImpRoadOutByWt;
-        RadRefComponents ImpRoadRef, ImpRoadRefByWt;
-        RadRefComponents ImpRoadEmi, ImpRoadEmiByWt;
+        RadOutput ImpRoadOut;
+        RadRefComponents ImpRoadRef, ImpRoadEmi;
 
         // Impervious road: absorbed and reflected
-        ImperviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, ImpRoadOut,
-                                                !scale_by_weight);
-        ImperviousRoadLwave.ComputeAbsAndRefRad(
-            idx, LtotForRoad, ImpRoadOutByWt, scale_by_weight);
-
+        ImperviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, ImpRoadOut);
         // Impervious road: reflected for each components
-        ImperviousRoadLwave.ComputeRefRadByComponent(
-            idx, LtotForRoad, ImpRoadRef, !scale_by_weight);
-        ImperviousRoadLwave.ComputeRefRadByComponent(
-            idx, LtotForRoad, ImpRoadRefByWt, scale_by_weight);
+        ImperviousRoadLwave.ComputeRefRadByComponent(idx, LtotForRoad,
+                                                     ImpRoadRef);
 
         // Impervious road: emitted for each components
-        ImperviousRoadLwave.ComputeEmiRadByComponent(
-            idx, LtotForRoad, ImpRoadEmi, !scale_by_weight);
-        ImperviousRoadLwave.ComputeEmiRadByComponent(
-            idx, LtotForRoad, ImpRoadEmiByWt, scale_by_weight);
+        ImperviousRoadLwave.ComputeEmiRadByComponent(idx, LtotForRoad,
+                                                     ImpRoadEmi);
 
         // +++++++++++++++++++++++++++++++++++++++++++++++++
         // Pervious road
@@ -221,22 +215,15 @@ void UrbanLongwave::computeNetLongwave() {
         RadRefComponents PerRoadEmi, PerRoadEmiByWt;
 
         // Impervious road: absorbed and reflected
-        PerviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, PerRoadOut,
-                                              !scale_by_weight);
-        PerviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, PerRoadOutByWt,
-                                              scale_by_weight);
+        PerviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, PerRoadOut);
 
         // Impervious road: reflected for each components
-        PerviousRoadLwave.ComputeRefRadByComponent(idx, LtotForRoad, PerRoadRef,
-                                                   !scale_by_weight);
-        PerviousRoadLwave.ComputeRefRadByComponent(
-            idx, LtotForRoad, PerRoadRefByWt, scale_by_weight);
+        PerviousRoadLwave.ComputeRefRadByComponent(idx, LtotForRoad,
+                                                   PerRoadRef);
 
         // Impervious road: emitted for each components
-        PerviousRoadLwave.ComputeEmiRadByComponent(idx, LtotForRoad, PerRoadEmi,
-                                                   !scale_by_weight);
-        PerviousRoadLwave.ComputeEmiRadByComponent(
-            idx, LtotForRoad, PerRoadEmiByWt, scale_by_weight);
+        PerviousRoadLwave.ComputeEmiRadByComponent(idx, LtotForRoad,
+                                                   PerRoadEmi);
 
         // +++++++++++++++++++++++++++++++++++++++++++++++++
         // Combining data from impervious and pervious road
@@ -244,23 +231,23 @@ void UrbanLongwave::computeNetLongwave() {
 
         // absorbed, reflected, and emitted radation
         Real RoadAbs, RoadRef, RoadEmi;
-        RoadAbs = ImpRoadOutByWt.Abs + PerRoadOutByWt.Abs;
-        RoadRef = ImpRoadOutByWt.Ref + PerRoadOutByWt.Ref;
-        RoadEmi = ImpRoadOutByWt.Emi + PerRoadOutByWt.Emi;
+        RoadAbs = ImpRoadOut.AbsByWt + PerRoadOut.AbsByWt;
+        RoadRef = ImpRoadOut.RefByWt + PerRoadOut.RefByWt;
+        RoadEmi = ImpRoadOut.EmiByWt + PerRoadOut.EmiByWt;
 
         // reflected radation to sky, sunwall, and shadewall
         Real RoadRefToSky, RoadRefToSunwall, RoadRefToShadewall;
-        RoadRefToSky = ImpRoadRefByWt.ToSky + PerRoadRefByWt.ToSky;
-        RoadRefToSunwall = ImpRoadRefByWt.ToSunwall + PerRoadRefByWt.ToSunwall;
+        RoadRefToSky = ImpRoadRef.ToSkyByWt + PerRoadRef.ToSkyByWt;
+        RoadRefToSunwall = ImpRoadRef.ToSunwallByWt + PerRoadRef.ToSunwallByWt;
         RoadRefToShadewall =
-            ImpRoadRefByWt.ToShadewall + PerRoadRefByWt.ToShadewall;
+            ImpRoadRef.ToShadewallByWt + PerRoadRef.ToShadewallByWt;
 
         // emitted radiation to sky, sunwall, and shadewall
         Real RoadEmiToSky, RoadEmiToSunwall, RoadEmiToShadewall;
-        RoadEmiToSky = ImpRoadEmiByWt.ToSky + PerRoadEmiByWt.ToSky;
-        RoadEmiToSunwall = ImpRoadEmiByWt.ToSunwall + PerRoadEmiByWt.ToSunwall;
+        RoadEmiToSky = ImpRoadEmi.ToSkyByWt + PerRoadEmi.ToSkyByWt;
+        RoadEmiToSunwall = ImpRoadEmi.ToSunwallByWt + PerRoadEmi.ToSunwallByWt;
         RoadEmiToShadewall =
-            ImpRoadEmiByWt.ToShadewall + PerRoadEmiByWt.ToShadewall;
+            ImpRoadEmi.ToShadewallByWt + PerRoadEmi.ToShadewallByWt;
 
         // +++++++++++++++++++++++++++++++++++++++++++++++++
         // Sunlit wall
@@ -311,18 +298,11 @@ void UrbanLongwave::computeNetLongwave() {
                          ShadewallRef.ToRoad + ShadewallEmi.ToRoad) *
                         hwr(c);
 
-          ImperviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, ImpRoadOut,
-                                                  !scale_by_weight);
-          ImperviousRoadLwave.ComputeAbsAndRefRad(
-              idx, LtotForRoad, ImpRoadOutByWt, scale_by_weight);
+          ImperviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, ImpRoadOut);
+          PerviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, PerRoadOut);
 
-          PerviousRoadLwave.ComputeAbsAndRefRad(idx, LtotForRoad, PerRoadOut,
-                                                !scale_by_weight);
-          PerviousRoadLwave.ComputeAbsAndRefRad(
-              idx, LtotForRoad, PerRoadOutByWt, scale_by_weight);
-
-          RoadAbs = ImpRoadOutByWt.Abs + PerRoadOutByWt.Abs;
-          RoadRef = ImpRoadOutByWt.Ref + PerRoadOutByWt.Ref;
+          RoadAbs = ImpRoadOut.AbsByWt + PerRoadOut.AbsByWt;
+          RoadRef = ImpRoadOut.RefByWt + PerRoadOut.RefByWt;
 
           //  For sunwall
           LtotForSunwall = (RoadRefToSunwall + RoadEmiToSunwall) / hwr(c) +
@@ -351,20 +331,16 @@ void UrbanLongwave::computeNetLongwave() {
           NetShadewall(c) -= ShadewallOut.Abs;
 
           // step (3)
-          ImperviousRoadLwave.ComputeRefRadByComponent(
-              idx, LtotForRoad, ImpRoadRef, !scale_by_weight);
-          ImperviousRoadLwave.ComputeRefRadByComponent(
-              idx, LtotForRoad, ImpRoadRefByWt, scale_by_weight);
-          PerviousRoadLwave.ComputeRefRadByComponent(
-              idx, LtotForRoad, PerRoadRef, !scale_by_weight);
-          PerviousRoadLwave.ComputeRefRadByComponent(
-              idx, LtotForRoad, PerRoadRefByWt, scale_by_weight);
+          ImperviousRoadLwave.ComputeRefRadByComponent(idx, LtotForRoad,
+                                                       ImpRoadRef);
+          PerviousRoadLwave.ComputeRefRadByComponent(idx, LtotForRoad,
+                                                     PerRoadRef);
 
-          RoadRefToSky = ImpRoadRefByWt.ToSky + PerRoadRefByWt.ToSky;
+          RoadRefToSky = ImpRoadRef.ToSkyByWt + PerRoadRef.ToSkyByWt;
           RoadRefToSunwall =
-              ImpRoadRefByWt.ToSunwall + PerRoadRefByWt.ToSunwall;
+              ImpRoadRef.ToSunwallByWt + PerRoadRef.ToSunwallByWt;
           RoadRefToShadewall =
-              ImpRoadRefByWt.ToShadewall + PerRoadRefByWt.ToShadewall;
+              ImpRoadRef.ToShadewallByWt + PerRoadRef.ToShadewallByWt;
 
           SunlitWallLwave.ComputeRefRadByComponent(idx, LtotForSunwall,
                                                    SunwallRef);
