@@ -11,17 +11,17 @@ struct RadIndices {
 };
 
 struct RadOutput {
-  Real Abs; // absorbed
-  Real Ref; // reflected
-  Real Emi; // emitted
+  Real Abs, AbsByWt; // absorbed
+  Real Ref, RefByWt; // reflected
+  Real Emi, EmiByWt; // emitted
 };
 
 struct RadRefComponents {
-  Real ToSky;
-  Real ToRoad;
-  Real ToSunwall;
-  Real ToShadewall;
-  Real ToOtherwall;
+  Real ToSky, ToSkyByWt;
+  Real ToRoad, ToRoadByWt;
+  Real ToSunwall, ToSunwallByWt;
+  Real ToShadewall, ToShadewallByWt;
+  Real ToOtherwall, ToOtherwallByWt;
 };
 
 } // namespace URBANXX

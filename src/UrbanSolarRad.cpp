@@ -33,24 +33,22 @@ UrbanAlbedo::UrbanAlbedo(UrbanSharedDataBundle &bundle)
 
 KOKKOS_FUNCTION
 void NetSolarRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
-                                       RadOutput &out,
-                                       bool scale_by_weight) const {
+                                       RadOutput &out) const {
 
   Real albedo = RoadData.BaseAlbedo(idx.c, idx.ib, idx.rtype);
 
   out.Abs = (1.0 - albedo) * InRad;
   out.Ref = albedo * InRad;
   out.Emi = 0.0;
-  if (scale_by_weight) {
-    out.Abs *= Weight;
-    out.Ref *= Weight;
-  }
+
+  out.AbsByWt = out.Abs * Weight;
+  out.RefByWt = out.Ref * Weight;
+  out.EmiByWt = out.Emi * Weight;
 }
 
 KOKKOS_FUNCTION
 void NetSolarRoad::ComputeRefRadByComponent(RadIndices idx, Real InRad,
-                                            RadRefComponents &ref,
-                                            bool scale_by_weight) const {
+                                            RadRefComponents &ref) const {
 
   Real albedo = RoadData.BaseAlbedo(idx.c, idx.ib, idx.rtype);
   Real vf_sr = ViewFactorSkyFromRoad(idx.c);
@@ -64,11 +62,11 @@ void NetSolarRoad::ComputeRefRadByComponent(RadIndices idx, Real InRad,
   ref.ToOtherwall = 0.0;
   ref.ToRoad = 0.0;
 
-  if (scale_by_weight) {
-    ref.ToSky *= Weight;
-    ref.ToSunwall *= Weight;
-    ref.ToShadewall *= Weight;
-  }
+  ref.ToSkyByWt = ref.ToSky * Weight;
+  ref.ToSunwallByWt = ref.ToSunwall * Weight;
+  ref.ToShadewallByWt = ref.ToShadewall * Weight;
+  ref.ToOtherwallByWt = ref.ToOtherwall * Weight;
+  ref.ToRoadByWt = ref.ToRoad * Weight;
 }
 
 KOKKOS_FUNCTION
@@ -80,6 +78,10 @@ void NetSolarWall::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
   out.Abs = (1.0 - albedo) * InRad;
   out.Ref = albedo * InRad;
   out.Emi = 0.0;
+
+  out.AbsByWt = out.Abs;
+  out.RefByWt = out.Ref;
+  out.EmiByWt = out.Emi;
 }
 
 KOKKOS_FUNCTION
@@ -98,6 +100,12 @@ void NetSolarWall::ComputeRefRadByComponent(RadIndices idx, Real InRad,
   ref.ToOtherwall = RefRad * vf_ww;
   ref.ToSunwall = 0.0;
   ref.ToShadewall = 0.0;
+
+  ref.ToSkyByWt = ref.ToSky;
+  ref.ToSunwallByWt = ref.ToSunwall;
+  ref.ToShadewallByWt = ref.ToShadewall;
+  ref.ToOtherwallByWt = ref.ToOtherwall;
+  ref.ToRoadByWt = ref.ToRoad;
 }
 
 template <typename ViewType>
@@ -358,8 +366,6 @@ void UrbanAlbedo::computeNetSolar() {
 
           Array1DR8 hwr = data_bundle.geometry.CanyonHwr;
 
-          bool scale_by_weight = true;
-
           for (int rtype = 0; rtype < 2; rtype++) {
 
             for (int ib = 0; ib < N_RAD_BAND; ib++) {
@@ -367,50 +373,38 @@ void UrbanAlbedo::computeNetSolar() {
               RadIndices idx{c, ib, rtype};
 
               // Impervious road
-              RadOutput ImpRoadOut, ImpRoadOutByWt;
-              RadRefComponents ImpRoadRef, ImpRoadRefByWt;
+              RadOutput ImpRoadOut;
+              RadRefComponents ImpRoadRef;
 
               Real StotForRoad = SradRoad(c, ib, rtype);
 
-              ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                  idx, StotForRoad, ImpRoadOut, !scale_by_weight);
+              ImperviousRoadNetSolar.ComputeAbsAndRefRad(idx, StotForRoad,
+                                                         ImpRoadOut);
 
-              ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                  idx, StotForRoad, ImpRoadOutByWt, scale_by_weight);
-
-              ImperviousRoadNetSolar.ComputeRefRadByComponent(
-                  idx, StotForRoad, ImpRoadRef, !scale_by_weight);
-
-              ImperviousRoadNetSolar.ComputeRefRadByComponent(
-                  idx, StotForRoad, ImpRoadRefByWt, scale_by_weight);
+              ImperviousRoadNetSolar.ComputeRefRadByComponent(idx, StotForRoad,
+                                                              ImpRoadRef);
 
               // Pervious road
-              RadOutput PerRoadOut, PerRoadOutByWt;
-              RadRefComponents PerRoadRef, PerRoadRefByWt;
+              RadOutput PerRoadOut;
+              RadRefComponents PerRoadRef;
 
-              PerviousRoadNetSolar.ComputeAbsAndRefRad(
-                  idx, StotForRoad, PerRoadOut, !scale_by_weight);
+              PerviousRoadNetSolar.ComputeAbsAndRefRad(idx, StotForRoad,
+                                                       PerRoadOut);
 
-              PerviousRoadNetSolar.ComputeAbsAndRefRad(
-                  idx, StotForRoad, PerRoadOutByWt, scale_by_weight);
-
-              PerviousRoadNetSolar.ComputeRefRadByComponent(
-                  idx, StotForRoad, PerRoadRef, !scale_by_weight);
-
-              PerviousRoadNetSolar.ComputeRefRadByComponent(
-                  idx, StotForRoad, PerRoadRefByWt, scale_by_weight);
+              PerviousRoadNetSolar.ComputeRefRadByComponent(idx, StotForRoad,
+                                                            PerRoadRef);
 
               // Combining data from impervious and pervious road
               Real RoadAbs, RoadRef;
               Real RoadRefToSky, RoadRefToSunwall, RoadRefToShadewall;
 
-              RoadAbs = ImpRoadOutByWt.Abs + PerRoadOutByWt.Abs;
-              RoadRef = ImpRoadOutByWt.Ref + PerRoadOutByWt.Ref;
-              RoadRefToSky = ImpRoadRefByWt.ToSky + PerRoadRefByWt.ToSky;
+              RoadAbs = ImpRoadOut.Abs + PerRoadOut.AbsByWt;
+              RoadRef = ImpRoadOut.RefByWt + PerRoadOut.RefByWt;
+              RoadRefToSky = ImpRoadRef.ToSkyByWt + PerRoadRef.ToSkyByWt;
               RoadRefToSunwall =
-                  ImpRoadRefByWt.ToSunwall + PerRoadRefByWt.ToSunwall;
+                  ImpRoadRef.ToSunwallByWt + PerRoadRef.ToSunwallByWt;
               RoadRefToShadewall =
-                  ImpRoadRefByWt.ToShadewall + PerRoadRefByWt.ToShadewall;
+                  ImpRoadRef.ToShadewallByWt + PerRoadRef.ToShadewallByWt;
 
               // Sunlit wall
               Real StotForSunwall = SradSunwall(c, ib, rtype);
@@ -455,20 +449,14 @@ void UrbanAlbedo::computeNetSolar() {
                 StotForRoad =
                     (SunwallRef.ToRoad + ShadewallRef.ToRoad) * hwr(c);
 
-                ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                    idx, StotForRoad, ImpRoadOut, !scale_by_weight);
+                ImperviousRoadNetSolar.ComputeAbsAndRefRad(idx, StotForRoad,
+                                                           ImpRoadOut);
 
-                ImperviousRoadNetSolar.ComputeAbsAndRefRad(
-                    idx, StotForRoad, ImpRoadOutByWt, scale_by_weight);
+                PerviousRoadNetSolar.ComputeAbsAndRefRad(idx, StotForRoad,
+                                                         PerRoadOut);
 
-                PerviousRoadNetSolar.ComputeAbsAndRefRad(
-                    idx, StotForRoad, PerRoadOut, !scale_by_weight);
-
-                PerviousRoadNetSolar.ComputeAbsAndRefRad(
-                    idx, StotForRoad, PerRoadOutByWt, scale_by_weight);
-
-                RoadAbs = ImpRoadOutByWt.Abs + PerRoadOutByWt.Abs;
-                RoadRef = ImpRoadOutByWt.Ref + PerRoadOutByWt.Ref;
+                RoadAbs = ImpRoadOut.AbsByWt + PerRoadOut.AbsByWt;
+                RoadRef = ImpRoadOut.RefByWt + PerRoadOut.RefByWt;
 
                 StotForSunwall =
                     RoadRefToSunwall / hwr(c) + ShadewallRef.ToOtherwall;
@@ -488,20 +476,16 @@ void UrbanAlbedo::computeNetSolar() {
 
                 // step (3)
                 ImperviousRoadNetSolar.ComputeRefRadByComponent(
-                    idx, StotForRoad, ImpRoadRef, !scale_by_weight);
-                ImperviousRoadNetSolar.ComputeRefRadByComponent(
-                    idx, StotForRoad, ImpRoadRefByWt, scale_by_weight);
+                    idx, StotForRoad, ImpRoadRef);
 
-                PerviousRoadNetSolar.ComputeRefRadByComponent(
-                    idx, StotForRoad, PerRoadRef, !scale_by_weight);
-                PerviousRoadNetSolar.ComputeRefRadByComponent(
-                    idx, StotForRoad, PerRoadRefByWt, scale_by_weight);
+                PerviousRoadNetSolar.ComputeRefRadByComponent(idx, StotForRoad,
+                                                              PerRoadRef);
 
-                RoadRefToSky = ImpRoadRefByWt.ToSky + PerRoadRefByWt.ToSky;
+                RoadRefToSky = ImpRoadRef.ToSkyByWt + PerRoadRef.ToSkyByWt;
                 RoadRefToSunwall =
-                    ImpRoadRefByWt.ToSunwall + PerRoadRefByWt.ToSunwall;
+                    ImpRoadRef.ToSunwallByWt + PerRoadRef.ToSunwallByWt;
                 RoadRefToShadewall =
-                    ImpRoadRefByWt.ToShadewall + PerRoadRefByWt.ToShadewall;
+                    ImpRoadRef.ToShadewallByWt + PerRoadRef.ToShadewallByWt;
 
                 SunlitWallNetSolar.ComputeRefRadByComponent(idx, StotForSunwall,
                                                             SunwallRef);
@@ -517,6 +501,9 @@ void UrbanAlbedo::computeNetSolar() {
 
                 Real crit =
                     std::max({RoadAbs, SunwallOut.Abs, ShadewallOut.Abs});
+                if (c == 0)
+                  printf("(%d, %d, %d): %d %e %e %e\n", c, ib, rtype, iter,
+                         RoadAbs, SunwallOut.Abs, ShadewallOut.Abs);
                 const Real errcrit = 0.00001;
                 if (crit < errcrit)
                   break;
