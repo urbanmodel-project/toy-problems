@@ -23,22 +23,47 @@ struct CanyonGeometryData {
   Array1DR8 ViewFactorWallFromRoad; // view factor of one wall to road
 };
 
+#define DECLARE_DUAL_ARRAY(suffix, name)                                       \
+  HostArray##suffix name##H;                                                   \
+  Array##suffix name;
+
 // --- Local Variables and Initial Inputs ---
 struct AtmosphereInputData {
-  HostArray1DR8 CoszenH; // cosine solar zenith angle
-  Array1DR8 Coszen;      // cosine solar zenith angle
+  // cosine solar zenith angle (-)
+  DECLARE_DUAL_ARRAY(1DR8, Coszen);
 
-  HostArray2DR8 SdirHorizH; // direct beam solar radiation on horizontal surface
-  Array2DR8 SdirHoriz;      // direct beam solar radiation on horizontal surface
+  // direct beam solar radiation on horizontal surface (W/m**2)
+  DECLARE_DUAL_ARRAY(2DR8, SdirHoriz);
 
-  HostArray2DR8 SdifHorizH; // diffuse solar radiation on horizontal surface
-  Array2DR8 SdifHoriz;      // diffuse solar radiation on horizontal surface
+  // diffuse solar radiation on horizontal surface (W/m**2)
+  DECLARE_DUAL_ARRAY(2DR8, SdifHoriz);
 
-  HostArray1DR8 FracSnowH; // fraction of ground covered by snow
-  Array1DR8 FracSnow;      // fraction of ground covered by snow
+  // fraction of ground covered by snow (-)
+  DECLARE_DUAL_ARRAY(1DR8, FracSnow);
 
-  HostArray1DR8 DownwellingLongRadH; // downwelling longwave radiation on host
-  Array1DR8 DownwellingLongRad;      // downwelling longwave radiation on device
+  // downwelling longwave radiation (W/m**2)
+  DECLARE_DUAL_ARRAY(1DR8, DownwellingLongRad);
+
+  // air temperature (K)
+  DECLARE_DUAL_ARRAY(1DR8, ForcTemp);
+
+  // potential temperature (Pa)
+  DECLARE_DUAL_ARRAY(1DR8, ForcPotTemp);
+
+  // air density (kg/m**3)
+  DECLARE_DUAL_ARRAY(1DR8, ForcRho);
+
+  // specific humidity (kg/kg)
+  DECLARE_DUAL_ARRAY(1DR8, ForcSpcHumd);
+
+  // atomspheric pressure (Pa)
+  DECLARE_DUAL_ARRAY(1DR8, ForcPress);
+
+  // wind speed in east direction (m/s)
+  DECLARE_DUAL_ARRAY(1DR8, ForcWindU);
+
+  // wind speed in north direction (m/s)
+  DECLARE_DUAL_ARRAY(1DR8, ForcWindV);
 };
 
 struct CombinedRoadDataType {

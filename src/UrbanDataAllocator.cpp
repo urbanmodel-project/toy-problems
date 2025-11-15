@@ -16,6 +16,14 @@ UrbanDataAllocator::UrbanDataAllocator(UrbanSharedDataBundle &bundle)
 #define ALLOCATE_VIEW(viewname, type, ...)                                     \
   viewname = type(#viewname, __VA_ARGS__);
 
+#define ALLOCATE_DUAL_VIEWS(viewname, hostType, devType, ...)                  \
+  ALLOCATE_VIEW(viewname##H, hostType, __VA_ARGS__);                           \
+  ALLOCATE_VIEW(viewname, devType, __VA_ARGS__);
+
+#define ALLOCATE_DUAL_VIEWS_V2(viewname, suffix, ...)                          \
+  ALLOCATE_VIEW(viewname##H, HostArray##suffix, __VA_ARGS__);                  \
+  ALLOCATE_VIEW(viewname, Array##suffix, __VA_ARGS__);
+
 void CanyonGeometryAllocateViews(int N_LUN, CanyonGeometryData &geometry) {
 
   ALLOCATE_VIEW(geometry.CanyonHwrH, HostArray1DR8, N_LUN);
@@ -33,20 +41,18 @@ void CanyonGeometryAllocateViews(int N_LUN, CanyonGeometryData &geometry) {
 void AtmosphereInputDataAllocateViews(int N_LUN, int N_RAD_BAND,
                                       AtmosphereInputData &solar) {
 
-  ALLOCATE_VIEW(solar.CoszenH, HostArray1DR8, N_LUN);
-  ALLOCATE_VIEW(solar.Coszen, Array1DR8, N_LUN);
-
-  ALLOCATE_VIEW(solar.SdirHorizH, HostArray2DR8, N_LUN, N_RAD_BAND);
-  ALLOCATE_VIEW(solar.SdirHoriz, Array2DR8, N_LUN, N_RAD_BAND);
-
-  ALLOCATE_VIEW(solar.SdifHorizH, HostArray2DR8, N_LUN, N_RAD_BAND);
-  ALLOCATE_VIEW(solar.SdifHoriz, Array2DR8, N_LUN, N_RAD_BAND);
-
-  ALLOCATE_VIEW(solar.FracSnowH, HostArray1DR8, N_LUN);
-  ALLOCATE_VIEW(solar.FracSnow, Array1DR8, N_LUN);
-
-  ALLOCATE_VIEW(solar.DownwellingLongRadH, HostArray1DR8, N_LUN);
-  ALLOCATE_VIEW(solar.DownwellingLongRad, Array1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.Coszen, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.SdirHoriz, 2DR8, N_LUN, N_RAD_BAND);
+  ALLOCATE_DUAL_VIEWS_V2(solar.SdifHoriz, 2DR8, N_LUN, N_RAD_BAND);
+  ALLOCATE_DUAL_VIEWS_V2(solar.FracSnow, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.DownwellingLongRad, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.ForcTemp, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.ForcPotTemp, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.ForcRho, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.ForcSpcHumd, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.ForcPress, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.ForcWindU, 1DR8, N_LUN);
+  ALLOCATE_DUAL_VIEWS_V2(solar.ForcWindV, 1DR8, N_LUN);
 
   printf("All AtmosphereInputData Views successfully allocated on host and "
          "device.\n");
