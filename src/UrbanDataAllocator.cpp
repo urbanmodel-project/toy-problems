@@ -254,6 +254,12 @@ void UrbanDataAllocator::initialize_states() {
   const Real TEMP_INIT = 274.0;
   const Real TEMP_WALL_INIT = 292.0;
   const Real TEMP_ROAD_INIT = 274.0;
+  const Real TEMP_AIR = 297.26422743678319;
+  const Real TH_AIR = 297.26422743678319;
+  const Real RHO_AIR = 1.1382761848551157;
+  const Real Q_AIR = 1.9217052569985755E-002;
+  const Real PBOT_AIR = 98260.450580263219;
+  const Real WIND_AIR = 0.52482489069830152;
 
   Kokkos::parallel_for(
       "SetParameters", N_LUN, KOKKOS_LAMBDA(const int c) {
@@ -262,12 +268,26 @@ void UrbanDataAllocator::initialize_states() {
         Array1DR8 T_roof = data_bundle.Roof.Temperature;
         Array1DR8 T_sunwall = data_bundle.SunlitWall.Temperature;
         Array1DR8 T_shdwall = data_bundle.ShadedWall.Temperature;
+        Array1DR8 T_air = data_bundle.input.ForcTemp;
+        Array1DR8 TPot_air = data_bundle.input.ForcPotTemp;
+        Array1DR8 Rho_air = data_bundle.input.ForcRho;
+        Array1DR8 P_air = data_bundle.input.ForcPress;
+        Array1DR8 Q_air = data_bundle.input.ForcSpcHumd;
+        Array1DR8 U_air = data_bundle.input.ForcWindU;
+        Array1DR8 V_air = data_bundle.input.ForcWindV;
 
         T_roof(c) = TEMP_INIT;
         T_improad(c) = TEMP_ROAD_INIT;
         T_perroad(c) = TEMP_ROAD_INIT;
         T_sunwall(c) = TEMP_WALL_INIT;
         T_shdwall(c) = TEMP_WALL_INIT;
+        T_air(c) = TEMP_AIR;
+        TPot_air(c) = TH_AIR;
+        Rho_air(c) = RHO_AIR;
+        P_air(c) = PBOT_AIR;
+        Q_air(c) = Q_AIR;
+        U_air(c) = WIND_AIR;
+        V_air(c) = WIND_AIR;
       });
 }
 
