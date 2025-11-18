@@ -4,6 +4,7 @@ add_executable(driver_urban
   ../src/UrbanDataAllocator.cpp
   ../src/UrbanSolarRad.cpp
   ../src/UrbanLongwaveRad.cpp
+  ../src/UrbanFluxes.cpp
   )
 
 target_link_libraries(driver_vector_add

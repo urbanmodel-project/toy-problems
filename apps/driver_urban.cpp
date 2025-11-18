@@ -4,6 +4,7 @@
 #include <UrbanDataAllocator.hpp>
 #include <UrbanSolarRad.hpp>
 #include <UrbanLongwaveRad.hpp>
+#include <UrbanFluxes.hpp>
 #include <iostream>
 
 using namespace URBANXX;
@@ -46,6 +47,7 @@ int main(int argc, char* argv[]) {
 
         UrbanAlbedo albedo_physics(simulation_bundle);
         UrbanLongwave longwave_physics(simulation_bundle);
+        UrbanSurfaceFluxes fluxes_physics(simulation_bundle);
 
         if (1) {
             longwave_physics.setLongwaveInputs();
