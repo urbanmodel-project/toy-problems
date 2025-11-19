@@ -336,17 +336,19 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
         const Real velocity = std::pow(u2_plus_v2, 0.5);
         const Real ur = std::max(1.0, velocity);
 
-        const Real thm = forc_t + lapse_rate * forc_hgt_t;
-        const Real thv = forc_th * (1.0 + 0.61 * forc_q);
-        const Real dth = thm - taf;
-        const Real dqh = forc_q - qaf;
-        const Real dthv = dth * (1.0 + 0.61 * forc_q) + 0.61 * forc_th * dqh;
-        const Real zldis = forc_hgt_u - z_d_town;
-
         const Real hwr = data_bundle.geometry.CanyonHwr(c);
 
         Real um, obu;
-        MoninObukIni(ur, thv, dthv, zldis, z_0_town, um, obu);
+        {
+          const Real thm = forc_t + lapse_rate * forc_hgt_t;
+          const Real thv = forc_th * (1.0 + 0.61 * forc_q);
+          const Real dth = thm - taf;
+          const Real dqh = forc_q - qaf;
+          const Real dthv = dth * (1.0 + 0.61 * forc_q) + 0.61 * forc_th * dqh;
+          const Real zldis = forc_hgt_u - z_d_town;
+
+          MoninObukIni(ur, thv, dthv, zldis, z_0_town, um, obu);
+        }
 
         Real fm = 0.0;
         for (int iter = 0; iter < 3; ++iter) {
