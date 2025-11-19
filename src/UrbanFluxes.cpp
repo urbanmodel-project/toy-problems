@@ -39,9 +39,9 @@ UrbanSurfaceFluxes::UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle)
 
 #define GRAVITY 9.80616
 #define VKC 0.4
-#define ZETAM 1.574 // transition point of lux-gradient relation (wind profile)
+#define ZETAM 1.574 // transition point of flux-gradient relation (wind profile)
 #define ZETAT                                                                  \
-  0.465 // transition point of lux-gradient relation (temperature profile)
+  0.465 // transition point of flux-gradient relation (temperature profile)
 
 KOKKOS_INLINE_FUNCTION
 void MoninObukIni(Real ur, Real thv, Real dthv, Real zldis, Real z0m, Real &um,
@@ -80,6 +80,13 @@ void StabilityFunc1(Real zeta, Real &value) {
   Real term2 = std::log((1.0 + chik2) * 0.5);
   Real term3 = 2.0 * std::atan(chik);
   value = term1 + term2 + term3 + M_PI * 0.5;
+}
+
+KOKKOS_INLINE_FUNCTION
+void StabilityFunc2(Real zeta, Real &value) {
+
+  Real chik2 = std::pow(1.0 - 16.0 * zeta, 0.5);
+  value = 2.0 * std::log((1.0 + chik2) * 0.5);
 }
 
 KOKKOS_INLINE_FUNCTION
@@ -165,11 +172,55 @@ void ComputeU10m(Real zldis, Real obu, Real z0m, Real um, Real ustar,
 
     } else {
       const Real term1 = std::log(obu / (10.0 + z0m)) + 5.0;
-      const Real term2 = -(5.0 * std::log(zeta) + zeta - 1.0);
-      const Real term3 = -5.0 * (10.0 + z0m) / obu;
+      const Real term2 = 5.0 * (10.0 + z0m) / obu;
+      const Real term3 = (5.0 * std::log(zeta) + zeta - 1.0);
 
       u10 = um - ustar / VKC * (term1 - term2 + term3);
     }
+  }
+}
+
+KOKKOS_INLINE_FUNCTION
+void ComputeRelationForOtherScalarProfiles(Real zldis, Real obu, Real z0,
+                                           Real &value) {
+
+  const Real zeta = zldis / obu;
+
+  if (zeta < -ZETAT) {
+
+    const Real term1 = std::log(-zeta * obu / z0);
+    const Real term4 = 0.8 * (std::pow(-ZETAT, 0.333) - std::pow(zeta, 0.0333));
+
+    Real term2, term3;
+    StabilityFunc2(-ZETAT, term2);
+    StabilityFunc2(z0 / obu, term3);
+
+    value = VKC / (term1 - term2 + term3 + term4);
+
+  } else if (zeta < 0.0) {
+
+    const Real term1 = std::log(zldis / z0);
+
+    Real term2, term3;
+    StabilityFunc2(zeta, term2);
+    StabilityFunc2(z0 / obu, term3);
+
+    value = VKC / (term1 - term2 + term3);
+
+  } else if (zeta < 1.0) {
+
+    const Real term1 = std::log(zldis / z0) + 5.0 * zeta;
+    const Real term2 = 5.0 * z0 / obu;
+
+    value = VKC / (term1 - term2);
+
+  } else {
+
+    const Real term1 = std::log(obu / z0) + 5.0;
+    const Real term2 = (5.0 * z0 / obu);
+    const Real term3 = 5.0 * std::log(zeta) + zeta - 1.0;
+
+    value = VKC / (term1 - term2 + term3);
   }
 }
 
@@ -196,6 +247,20 @@ void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
 
   Real u10;
   ComputeU10m(zldis, obu, z0m, um, ustar, u10);
+
+  // Calcualte temp1 for the temperature profile
+  ComputeRelationForOtherScalarProfiles(zldis, obu, z0h, temp1);
+
+  // Since z0q == z0h, temp2 for the humidity profile is same as
+  // that for temperature profile
+  temp2 = temp1;
+
+  // Calcualte temp1 at 2m for the temperature profile
+  ComputeRelationForOtherScalarProfiles(2.0 + z0h, obu, z0h, temp12m);
+
+  // similarly, set temp2 at 2m for humidity profile to be same that
+  // for the temperature profile
+  temp22m = temp12m;
 }
 
 void UrbanSurfaceFluxes::computeSurfaceFluxes() {
