@@ -42,6 +42,7 @@ UrbanSurfaceFluxes::UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle)
 #define ZETAM 1.574 // transition point of flux-gradient relation (wind profile)
 #define ZETAT                                                                  \
   0.465 // transition point of flux-gradient relation (temperature profile)
+#define CPAIR 1004.64 // specific heat of dry air [J/kg/K]
 
 KOKKOS_INLINE_FUNCTION
 void MoninObukIni(Real ur, Real thv, Real dthv, Real zldis, Real z0m, Real &um,
@@ -261,6 +262,48 @@ void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
   // similarly, set temp2 at 2m for humidity profile to be same that
   // for the temperature profile
   temp22m = temp12m;
+
+  Real fmnew;
+  if (std::min(zeta, 1.0) < 0.0) {
+    const Real x = std::pow((1.0 - 16.0 * std::min(zeta, 1.0)), 0.25);
+    const Real tmp2 = std::log((1.0 + x * x) / 2.0);
+    const Real tmp3 = std::log((!.0 + x) / 2.0);
+    fmnew = 2.0 * tmp3 + tmp2 - std::atan(x) + M_PI / 2.0;
+  } else {
+    fmnew = -5.0 * std::min(zeta, 1.0);
+  }
+
+  if (iter == 0)
+    fm = fmnew;
+  else
+    fm = 0.5 * (fm + fmnew);
+}
+
+KOKKOS_INLINE_FUNCTION
+void ComputeCanyonUWind(Real ht_roof, Real z_d_town, Real z_0_town,
+                        Real forc_hgt_u, Real wind_hgt_canyon, Real hwr,
+                        Real ur, Real &canyon_u_wind) {
+
+  // wind at cannyon top
+  const Real term1 = std::log((ht_roof - z_d_town) / z_0_town);
+  const Real term2 = std::log((forc_hgt_u - z_d_town) / z_0_town);
+  const Real canyontop_wind = ur * term1 / term2;
+
+  const Real factor = std::exp(-0.5 * hwr * (1.0 - wind_hgt_canyon / ht_roof));
+
+  if (hwr < 0.5) {
+
+    canyon_u_wind = canyontop_wind * factor; // eqn 3.61
+
+  } else if (hwr < 1.0) {
+
+    const Real factor2 = 1.0 + 2.0 * (2.0 / M_PI - 1.0) * (hwr - 0.5);
+    canyon_u_wind = canyontop_wind * factor2 * factor; // eqn 3.62
+
+  } else {
+
+    canyon_u_wind = canyontop_wind * M_PI / 2.0 * factor; // eqn 3.60
+  }
 }
 
 void UrbanSurfaceFluxes::computeSurfaceFluxes() {
@@ -272,14 +315,19 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
         const Real forc_hgt_t = 144.44377627618979; // observational height (m)
         const Real forc_hgt_u = forc_hgt_t;         // observational height (m)
         const Real z_d_town = 113.96331622200367;   // displacement height (m)
-        const Real z_0_town = 0.48046005418613641;  // momentum roughness length
-        const Real lapse_rate = 0.0098; // dry adiabatic lapse rate (K/m)
+        const Real z_0_town =
+            0.48046005418613641;           // momentum roughness length (m)
+        const Real ht_roof = 120.0;        // height of roof (m)
+        const Real wind_hgt_canyon = 60.0; // height above road at which in
+                                           // canyon needs to be computed (m)
+        const Real lapse_rate = 0.0098;    // dry adiabatic lapse rate (K/m)
 
         const Real forc_t = ForcTemp(c);
         const Real forc_u = ForcU(c);
         const Real forc_v = ForcV(c);
         const Real forc_th = ForcTh(c);
         const Real forc_q = ForcQ(c);
+        const Real forc_rho = ForcRho(c);
 
         Real taf = Taf(c);
         Real qaf = Qaf(c);
@@ -295,16 +343,35 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
         const Real dthv = dth * (1.0 + 0.61 * forc_q) + 0.61 * forc_th * dqh;
         const Real zldis = forc_hgt_u - z_d_town;
 
+        const Real hwr = data_bundle.geometry.CanyonHwr(c);
+
         Real um, obu;
         MoninObukIni(ur, thv, dthv, zldis, z_0_town, um, obu);
 
-        int iter = 1;
-        Real ustar;
-        Real temp1, temp12m;
-        Real temp2, temp22m;
-        Real fm;
-        FrictionVelocity(iter, forc_hgt_u, z_d_town, z_0_town, obu, ur, um,
-                         ustar, temp1, temp12m, temp2, temp22m, fm);
+        Real fm = 0.0;
+        for (int iter = 0; iter < 3; ++iter) {
+          Real ustar;
+          Real temp1, temp12m;
+          Real temp2, temp22m;
+          FrictionVelocity(iter, forc_hgt_u, z_d_town, z_0_town, obu, ur, um,
+                           ustar, temp1, temp12m, temp2, temp22m, fm);
+
+          Real ramu = 1.0 / (ustar * ustar / um);
+          Real rahu = 1.0 / (temp1 * ustar);
+          Real rawu = 1.0 / (temp2 * ustar);
+
+          Real canyon_u_wind;
+          if (iter == 0) {
+            ComputeCanyonUWind(ht_roof, z_d_town, z_0_town, forc_hgt_u,
+                               wind_hgt_canyon, hwr, ur, canyon_u_wind);
+          }
+
+          Real canyon_wind_pow2 =
+              std::pow(canyon_u_wind, 2.0) + std::pow(ustar, 2.0);
+          Real canyon_wind = std::pow(canyon_wind_pow2, 0.5);
+          Real canyon_resistance =
+              CPAIR * forc_rho / (11.8 + 4.2 * canyon_wind);
+        }
       });
 }
 
