@@ -16,10 +16,14 @@ private:
   Array1DR8 ForcPbot;
   Array1DR8 ForcU;
   Array1DR8 ForcV;
+
+  Array1DR8 Taf;
+  Array1DR8 Qaf;
   UrbanSharedDataBundle data_bundle;
 
 public:
   UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle);
+  void computeSurfaceFluxes();
 };
 
 } // namespace URBANXX
