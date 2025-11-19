@@ -39,6 +39,9 @@ UrbanSurfaceFluxes::UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle)
 
 #define GRAVITY 9.80616
 #define VKC 0.4
+#define ZETAM 1.574 // transition point of lux-gradient relation (wind profile)
+#define ZETAT                                                                  \
+  0.465 // transition point of lux-gradient relation (temperature profile)
 
 KOKKOS_INLINE_FUNCTION
 void MoninObukIni(Real ur, Real thv, Real dthv, Real zldis, Real z0m, Real &um,
@@ -80,24 +83,12 @@ void StabilityFunc1(Real zeta, Real &value) {
 }
 
 KOKKOS_INLINE_FUNCTION
-void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
-                      Real ur, Real um, Real &ustar, Real &temp1, Real &temp12m,
-                      Real &temp2, Real &temp22m, Real &fm) {
+void ComputeUstar(Real zldis, Real obu, Real z0m, Real um, Real &ustar) {
 
-  const Real zldis = forc_hgt_u - displa;
   const Real zeta = zldis / obu;
 
-  const Real ZETAM =
-      1.574; // transition point of lux-gradient relation (wind profile)
-  const Real ZETAT =
-      0.465; // transition point of lux-gradient relation (temperature profile)
-
-  const Real z0m = z0;
-  const Real z0h = z0;
-  const Real z0q = z0;
-
   if (zeta < -ZETAM) {
-    const Real term1 = VKC * um / std::log(ZETAM * obu / z0m);
+    const Real term1 = std::log(ZETAM * obu / z0m);
     const Real term4 =
         1.14 * (std::pow(-zeta, 0.333) - std::pow(-ZETAM, 0.333));
 
@@ -105,17 +96,17 @@ void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
     StabilityFunc1(-ZETAM, term2);
     StabilityFunc1(z0m / obu, term3);
 
-    ustar = term1 - term2 + term3 + term4;
+    ustar = VKC * um / (term1 - term2 + term3 + term4);
 
   } else if (zeta < 0.0) {
 
-    const Real term1 = VKC * um / std::log(zldis / z0m);
+    const Real term1 = std::log(zldis / z0m);
 
     Real term2, term3;
     StabilityFunc1(zeta, term2);
     StabilityFunc1(z0m / obu, term3);
 
-    ustar = term1 - term2 + term3;
+    ustar = VKC * um / (term1 - term2 + term3);
 
   } else if (zeta <= 1.0) {
 
@@ -128,6 +119,73 @@ void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
                        (5.0 * std::log(zeta) + zeta - 1.0);
     ustar = VKC * um / denom;
   }
+}
+
+KOKKOS_INLINE_FUNCTION
+void ComputeU10m(Real zldis, Real obu, Real z0m, Real um, Real ustar,
+                 Real &u10) {
+
+  const Real zeta = zldis / obu;
+
+  if (zldis - z0m <= 10.0) {
+
+    u10 = um;
+
+  } else {
+
+    if (zeta < -ZETAM) {
+
+      const Real term1 = std::log(-ZETAM * obu / (10.0 + z0m));
+      const Real term4 =
+          1.14 * (std::pow(-zeta, 0.333) - std::pow(-ZETAM, 0.333));
+
+      Real term2, term3;
+      StabilityFunc1(-ZETAM, term2);
+      StabilityFunc1((10.0 + z0m) / obu, term2);
+
+      u10 = um - ustar / VKC * (term1 - term2 + term3 + term4);
+
+    } else if (zeta < 0.0) {
+
+      const Real term1 = std::log(zldis / (10.0 + z0m));
+
+      Real term2, term3;
+      StabilityFunc1(zeta, term2);
+      StabilityFunc1((10.0 + z0m) / obu, term3);
+
+      u10 = um - ustar / VKC * (term1 - term2 + term3);
+
+    } else if (zeta <= 1.0) {
+
+      const Real term1 = std::log(zldis / (10.0 + z0m));
+      const Real term2 = -5.0 * zeta;
+      const Real term3 = -5.0 * (10.0 + z0m) / obu;
+
+      u10 = um - ustar / VKC * (term1 - term2 + term3);
+
+    } else {
+      const Real term1 = std::log(obu / (10.0 + z0m)) + 5.0;
+      const Real term2 = -(5.0 * std::log(zeta) + zeta - 1.0);
+      const Real term3 = -5.0 * (10.0 + z0m) / obu;
+
+      u10 = um - ustar / VKC * (term1 - term2 + term3);
+    }
+  }
+}
+
+KOKKOS_INLINE_FUNCTION
+void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
+                      Real ur, Real um, Real &ustar, Real &temp1, Real &temp12m,
+                      Real &temp2, Real &temp22m, Real &fm) {
+
+  const Real zldis = forc_hgt_u - displa;
+  const Real zeta = zldis / obu;
+
+  const Real z0m = z0;
+  const Real z0h = z0;
+  const Real z0q = z0;
+
+  ComputeUstar(zldis, obu, z0m, um, ustar);
 
   Real vds;
   if (zeta < 0) {
@@ -135,6 +193,9 @@ void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
   } else {
     vds = 2.0e-3 * ustar;
   }
+
+  Real u10;
+  ComputeU10m(zldis, obu, z0m, um, ustar, u10);
 }
 
 void UrbanSurfaceFluxes::computeSurfaceFluxes() {
