@@ -7,6 +7,9 @@
 #define ALLOCATE_VIEW(viewname, type, ...)                                     \
   viewname = type(#viewname, __VA_ARGS__);
 
+#define PERVIOUS_ROAD_FRACTION 0.16666667163372040
+#define ROOF_FRACTION 0.69999998807907104
+
 namespace URBANXX {
 UrbanSurfaceFluxes::UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle)
     : data_bundle(bundle) {
@@ -18,23 +21,33 @@ UrbanSurfaceFluxes::UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle)
   ForcU = bundle.input.ForcWindU;
   ForcV = bundle.input.ForcWindV;
 
+  Hwr = bundle.geometry.CanyonHwr;
+
   int N_LUN = data_bundle.N_LUN;
   ALLOCATE_VIEW(Taf, Array1DR8, N_LUN);
   ALLOCATE_VIEW(Qaf, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(fPervRoad, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(fRoof, Array1DR8, N_LUN);
 
-  Array1DR8 qafH, tafH;
+  Array1DR8 qafH, tafH, fPervRoadH, fRoofH;
   ALLOCATE_VIEW(qafH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(tafH, HostArray1DR8, N_LUN);
+  ALLOCATE_VIEW(fPervRoadH, HostArray1DR8, N_LUN);
+  ALLOCATE_VIEW(fRoofH, HostArray1DR8, N_LUN);
 
   Real TAF = 283.0;
   Real QAF = 1e-4;
   for (int i = 0; i < N_LUN; ++i) {
     tafH(i) = TAF;
     qafH(i) = QAF;
+    fPervRoadH(i) = PERVIOUS_ROAD_FRACTION;
+    fRoofH(i) = ROOF_FRACTION;
   }
 
   Kokkos::deep_copy(Taf, tafH);
   Kokkos::deep_copy(Qaf, qafH);
+  Kokkos::deep_copy(fPervRoad, fPervRoadH);
+  Kokkos::deep_copy(fRoof, fRoofH);
 }
 
 #define GRAVITY 9.80616

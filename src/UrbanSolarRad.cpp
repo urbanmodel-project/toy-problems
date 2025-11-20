@@ -8,6 +8,8 @@
 
 namespace URBANXX {
 
+#define PERVIOUS_ROAD_FRACTION 0.16666667163372040
+
 NetSolarRoad::NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData,
                            Real roadWeight)
     : Hwr(geometry->CanyonHwr),
@@ -27,9 +29,9 @@ UrbanAlbedo::UrbanAlbedo(UrbanSharedDataBundle &bundle)
       SunlitWallNetSolar(&bundle.geometry, bundle.SunlitWall),
       ShadeWallNetSolar(&bundle.geometry, bundle.ShadedWall),
       ImperviousRoadNetSolar(&bundle.geometry, bundle.ImperviousRoad,
-                             1.0 - 0.16666667163372040),
+                             1.0 - PERVIOUS_ROAD_FRACTION),
       PerviousRoadNetSolar(&bundle.geometry, bundle.PerviousRoad,
-                           0.16666667163372040) {}
+                           PERVIOUS_ROAD_FRACTION) {}
 
 KOKKOS_FUNCTION
 void NetSolarRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad,

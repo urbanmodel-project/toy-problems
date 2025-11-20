@@ -21,6 +21,9 @@ private:
   Array1DR8 Qaf;
   UrbanSharedDataBundle data_bundle;
 
+  Array1DR8 Hwr;
+  Array1DR8 fPervRoad; // fraction of pervious road w.r.t. total road
+  Array1DR8 fRoof;     // fraction of roof w.r.t. grid cell
 public:
   UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle);
   void computeSurfaceFluxes();

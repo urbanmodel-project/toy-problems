@@ -7,6 +7,7 @@
 #include <iostream>
 
 #define STEBOL 5.670374419e-8
+#define PERVIOUS_ROAD_FRACTION 0.16666667163372040
 
 namespace URBANXX {
 NetLongwaveRoad::NetLongwaveRoad(CanyonGeometryData *geometry,
@@ -28,9 +29,9 @@ UrbanLongwave::UrbanLongwave(UrbanSharedDataBundle &bundle)
     : data_bundle(bundle), SunlitWallLwave(&bundle.geometry, bundle.SunlitWall),
       ShadeWallLwave(&bundle.geometry, bundle.ShadedWall),
       ImperviousRoadLwave(&bundle.geometry, bundle.ImperviousRoad,
-                          1.0 - 0.16666667163372040),
+                          1.0 - PERVIOUS_ROAD_FRACTION),
       PerviousRoadLwave(&bundle.geometry, bundle.PerviousRoad,
-                        0.16666667163372040) {}
+                        PERVIOUS_ROAD_FRACTION) {}
 
 KOKKOS_FUNCTION
 void NetLongwaveRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
