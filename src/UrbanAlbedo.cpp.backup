@@ -12,7 +12,7 @@ NetSolarRoad::NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData,
     : Hwr(geometry->CanyonHwr),
       ViewFactorSkyFromRoad(geometry->ViewFactorSkyFromRoad),
       ViewFactorWallFromRoad(geometry->ViewFactorWallFromRoad),
-      RoadData(roadData), Weight(roadWeight) {}
+      RoadData(roadData),FractionOfTotalRoad(roadWeight) {}
 
 NetSolarWall::NetSolarWall(CanyonGeometryData *geometry, WallDataType &wallData)
     : Hwr(geometry->CanyonHwr),
@@ -43,16 +43,16 @@ void NetSolarRoad::ComputeAbsAndRefRad(int c, int ib, Real InRad, Real *AbsRad,
   Real vf_wr = ViewFactorWallFromRoad(c);
 
   *AbsRad = (1.0 - albedo) * InRad;
-  *AbsRadByWeight = (*AbsRad) * Weight;
+  *AbsRadByWeight = (*AbsRad) *FractionOfTotalRoad;
 
   *RefRad = albedo * InRad;
-  *RefRadByWeight = (*RefRad) * Weight;
+  *RefRadByWeight = (*RefRad) *FractionOfTotalRoad;
 
   *RefRadToSky = (*RefRad) * vf_sr;
   *RefRadToSunWall = (*RefRad) * vf_wr;
   *RefRadToShadeWall = (*RefRad) * vf_wr;
-  *RefRadToSunWallByWeight = (*RefRad) * vf_wr * Weight;
-  *RefRadToShadeWallByWeight = (*RefRad) * vf_wr * Weight;
+  *RefRadToSunWallByWeight = (*RefRad) * vf_wr *FractionOfTotalRoad;
+  *RefRadToShadeWallByWeight = (*RefRad) * vf_wr *FractionOfTotalRoad;
 }
 
 void NetSolarRoad::ComputeAbsAndRefRad(int c, int ib, Real InRad,
@@ -64,8 +64,8 @@ void NetSolarRoad::ComputeAbsAndRefRad(int c, int ib, Real InRad,
   *AbsRad = (1.0 - albedo) * InRad;
   *RefRad = albedo * InRad;
   if (scale_by_weight) {
-    *AbsRad *= Weight;
-    *RefRad *= Weight;
+    *AbsRad *=FractionOfTotalRoad;
+    *RefRad *=FractionOfTotalRoad;
   }
 }
 
@@ -86,9 +86,9 @@ void NetSolarRoad::ComputeRefRadByComponent(int c, int ib, Real InRad,
   *RefRadToShadewall = RefRad * vf_wr;
 
   if (scale_by_weight) {
-    *RefRadToSky *= Weight;
-    *RefRadToSunwall *= Weight;
-    *RefRadToShadewall *= Weight;
+    *RefRadToSky *=FractionOfTotalRoad;
+    *RefRadToSunwall *=FractionOfTotalRoad;
+    *RefRadToShadewall *=FractionOfTotalRoad;
   }
 }
 

@@ -14,7 +14,7 @@ private:
   Array1DR8 ViewFactorSkyFromRoad;
   Array1DR8 ViewFactorWallFromRoad;
   RoadDataType RoadData;
-  Real Weight;
+  Real FractionOfTotalRoad;
 
 public:
   NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData, Real);

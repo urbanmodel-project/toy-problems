@@ -14,7 +14,7 @@ NetLongwaveRoad::NetLongwaveRoad(CanyonGeometryData *geometry,
     : Hwr(geometry->CanyonHwr),
       ViewFactorSkyFromRoad(geometry->ViewFactorSkyFromRoad),
       ViewFactorWallFromRoad(geometry->ViewFactorWallFromRoad),
-      RoadData(roadData), Weight(roadWeight) {}
+      RoadData(roadData), FractionOfTotalRoad(roadWeight) {}
 
 NetLongwaveWall::NetLongwaveWall(CanyonGeometryData *geometry,
                                  WallDataType &wallData)
@@ -43,9 +43,9 @@ void NetLongwaveRoad::ComputeAbsAndRefRad(RadIndices idx, Real InRad,
   out.Ref = (1.0 - emiss) * InRad;
   out.Emi = emiss * STEBOL * std::pow(Temp, 4.0);
 
-  out.AbsByWt = out.Abs * Weight;
-  out.RefByWt = out.Ref * Weight;
-  out.EmiByWt = out.Emi * Weight;
+  out.AbsByWt = out.Abs * FractionOfTotalRoad;
+  out.RefByWt = out.Ref * FractionOfTotalRoad;
+  out.EmiByWt = out.Emi * FractionOfTotalRoad;
 }
 
 KOKKOS_FUNCTION
@@ -61,11 +61,11 @@ void NetLongwaveRoad::ComputeRadByComponent(RadIndices idx, Real Data,
   ref.ToOtherwall = 0.0;
   ref.ToRoad = 0.0;
 
-  ref.ToSkyByWt = ref.ToSky * Weight;
-  ref.ToSunwallByWt = ref.ToSunwall * Weight;
-  ref.ToShadewallByWt = ref.ToShadewall * Weight;
-  ref.ToOtherwallByWt = ref.ToOtherwall * Weight;
-  ref.ToRoadByWt = ref.ToRoad * Weight;
+  ref.ToSkyByWt = ref.ToSky * FractionOfTotalRoad;
+  ref.ToSunwallByWt = ref.ToSunwall * FractionOfTotalRoad;
+  ref.ToShadewallByWt = ref.ToShadewall * FractionOfTotalRoad;
+  ref.ToOtherwallByWt = ref.ToOtherwall * FractionOfTotalRoad;
+  ref.ToRoadByWt = ref.ToRoad * FractionOfTotalRoad;
 }
 
 KOKKOS_FUNCTION
