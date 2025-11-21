@@ -48,6 +48,7 @@ public:
   UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle);
   void computeSurfaceFluxes();
   void computeNewTafAndQaf(int c, Real, Real, Real, Real, Real &, Real &);
+  void computeQsatForSurfaces(int);
 };
 
 } // namespace URBANXX

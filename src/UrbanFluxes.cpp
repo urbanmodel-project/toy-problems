@@ -443,6 +443,18 @@ void ComputeCanyonUWind(Real ht_roof, Real z_d_town, Real z_0_town,
 }
 
 KOKKOS_INLINE_FUNCTION
+void UrbanSurfaceFluxes::computeQsatForSurfaces(int c) {
+
+  const Real forc_p = ForcPbot(c);
+
+  Roof.ComputeQsat(c, forc_p);
+  SunlitWall.ComputeQsat(c, forc_p);
+  ShadeWall.ComputeQsat(c, forc_p);
+  ImperviousRoad.ComputeQsat(c, forc_p);
+  PerviousRoad.ComputeQsat(c, forc_p);
+}
+
+KOKKOS_INLINE_FUNCTION
 void UrbanSurfaceFluxes::computeNewTafAndQaf(int c, Real canyon_wind, Real thm,
                                              Real rahu, Real rawu, Real &taf,
                                              Real &qaf) {
@@ -554,12 +566,7 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
           MoninObukIni(ur, thv, dthv, zldis, z_0_town, um, obu);
         }
 
-        const Real forc_p = ForcPbot(c);
-        Roof.ComputeQsat(c, forc_p);
-        SunlitWall.ComputeQsat(c, forc_p);
-        ShadeWall.ComputeQsat(c, forc_p);
-        ImperviousRoad.ComputeQsat(c, forc_p);
-        PerviousRoad.ComputeQsat(c, forc_p);
+        computeQsatForSurfaces(c);
 
         Real fm = 0.0;
         for (int iter = 0; iter < 3; ++iter) {
