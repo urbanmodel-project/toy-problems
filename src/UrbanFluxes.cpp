@@ -442,6 +442,73 @@ void ComputeCanyonUWind(Real ht_roof, Real z_d_town, Real z_0_town,
   }
 }
 
+KOKKOS_INLINE_FUNCTION
+void UrbanSurfaceFluxes::computeNewTafAndQaf(int c, Real canyon_wind, Real thm,
+                                             Real rahu, Real rawu, Real &taf,
+                                             Real &qaf) {
+
+  const Real hwr = data_bundle.geometry.CanyonHwr(c);
+
+  const Real q_roof = Roof.qs(c);
+  const Real q_road_imperv = ImperviousRoad.qs(c);
+  const Real q_road_perv = PerviousRoad.qs(c);
+  const Real q_sunwall = 0.0;
+  const Real q_shadewall = 0.0;
+
+  const Real T_roof = Roof.Temp(c);
+  const Real T_road_imperv = ImperviousRoad.Temp(c);
+  const Real T_road_perv = PerviousRoad.Temp(c);
+  const Real T_sunwall = SunlitWall.Temp(c);
+  const Real T_shadewall = ShadeWall.Temp(c);
+
+  const Real forc_q = ForcQ(c);
+  const Real forc_rho = ForcRho(c);
+  Real canyon_resistance = CPAIR * forc_rho / (11.8 + 4.2 * canyon_wind);
+
+  const Real wt_road_perv = fPervRoad(c);
+  const Real wt_roof = fRoof(c);
+
+  const Real fwet_roof = 0.0;
+  const Real wtus_roof = wt_roof / canyon_resistance;
+  const Real wtuq_roof = fwet_roof * wt_roof / canyon_resistance;
+
+  const Real wtus_road_perv =
+      wt_road_perv * (1.0 - wt_roof) / canyon_resistance;
+  const Real wtuq_road_perv =
+      wt_road_perv * (1.0 - wt_roof) / canyon_resistance;
+
+  const Real fwet_road_imperv = (qaf > q_road_imperv) ? 1.0 : 0.0;
+  const Real wtus_road_imperv =
+      (1.0 - wt_road_perv) * (1.0 - wt_roof) / canyon_resistance;
+  const Real wtuq_road_imperv = fwet_road_imperv * (1.0 - wt_road_perv) *
+                                (1.0 - wt_roof) / canyon_resistance;
+
+  const Real wtus_sunwall = hwr * (1.0 - wt_roof) / canyon_resistance;
+  const Real wtuq_sunwall = 0.0;
+
+  const Real wtus_shadewall = hwr * (1.0 - wt_roof) / canyon_resistance;
+  const Real wtuq_shadewall = 0.0;
+
+  const Real taf_numer =
+      thm / rahu + T_roof * wtus_roof + T_road_perv * wtus_road_perv +
+      T_road_imperv * wtus_road_imperv + T_sunwall * wtus_sunwall +
+      T_shadewall * wtus_shadewall;
+
+  const Real taf_denom = 1.0 / rahu + wtus_roof + wtus_road_perv +
+                         wtus_road_imperv + wtus_sunwall + wtus_shadewall;
+
+  const Real qaf_numer =
+      forc_q / rawu + q_roof * wtuq_roof + q_road_perv * wtuq_road_perv +
+      q_road_imperv * wtuq_road_imperv + q_sunwall * wtuq_sunwall +
+      q_shadewall * wtuq_shadewall;
+
+  const Real qaf_denom = 1.0 / rawu + wtuq_roof + wtuq_road_perv +
+                         wtuq_road_imperv + wtuq_sunwall + wtuq_shadewall;
+
+  taf = taf_numer / taf_denom;
+  qaf = qaf_numer / qaf_denom;
+}
+
 void UrbanSurfaceFluxes::computeSurfaceFluxes() {
   std::cout << "In computeSurfaceFluxes \n";
 
@@ -494,18 +561,6 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
         ImperviousRoad.ComputeQsat(c, forc_p);
         PerviousRoad.ComputeQsat(c, forc_p);
 
-        const Real q_roof = Roof.qs(c);
-        const Real q_road_imperv = ImperviousRoad.qs(c);
-        const Real q_road_perv = PerviousRoad.qs(c);
-        const Real q_sunwall = 0.0;
-        const Real q_shadewall = 0.0;
-
-        const Real T_roof = Roof.Temp(c);
-        const Real T_road_imperv = ImperviousRoad.Temp(c);
-        const Real T_road_perv = PerviousRoad.Temp(c);
-        const Real T_sunwall = SunlitWall.Temp(c);
-        const Real T_shadewall = ShadeWall.Temp(c);
-
         Real fm = 0.0;
         for (int iter = 0; iter < 3; ++iter) {
           Real ustar;
@@ -528,55 +583,7 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
               std::pow(canyon_u_wind, 2.0) + std::pow(ustar, 2.0);
           Real canyon_wind = std::pow(canyon_wind_pow2, 0.5);
 
-          const Real forc_rho = ForcRho(c);
-          Real canyon_resistance =
-              CPAIR * forc_rho / (11.8 + 4.2 * canyon_wind);
-
-          const Real wt_road_perv = fPervRoad(c);
-          const Real wt_roof = fRoof(c);
-
-          const Real fwet_roof = 0.0;
-          const Real wtus_roof = wt_roof / canyon_resistance;
-          const Real wtuq_roof = fwet_roof * wt_roof / canyon_resistance;
-
-          const Real wtus_road_perv =
-              wt_road_perv * (1.0 - wt_roof) / canyon_resistance;
-          const Real wtuq_road_perv =
-              wt_road_perv * (1.0 - wt_roof) / canyon_resistance;
-
-          const Real fwet_road_imperv = (qaf > q_road_imperv) ? 1.0 : 0.0;
-          const Real wtus_road_imperv =
-              (1.0 - wt_road_perv) * (1.0 - wt_roof) / canyon_resistance;
-          const Real wtuq_road_imperv = fwet_road_imperv *
-                                        (1.0 - wt_road_perv) * (1.0 - wt_roof) /
-                                        canyon_resistance;
-
-          const Real wtus_sunwall = hwr * (1.0 - wt_roof) / canyon_resistance;
-          const Real wtuq_sunwall = 0.0;
-
-          const Real wtus_shadewall = hwr * (1.0 - wt_roof) / canyon_resistance;
-          const Real wtuq_shadewall = 0.0;
-
-          const Real taf_numer =
-              thm / rahu + T_roof * wtus_roof + T_road_perv * wtus_road_perv +
-              T_road_imperv * wtus_road_imperv + T_sunwall * wtus_sunwall +
-              T_shadewall * wtus_shadewall;
-
-          const Real taf_denom = 1.0 / rahu + wtus_roof + wtus_road_perv +
-                                 wtus_road_imperv + wtus_sunwall +
-                                 wtus_shadewall;
-
-          const Real qaf_numer =
-              forc_q / rawu + q_roof * wtuq_roof +
-              q_road_perv * wtuq_road_perv + q_road_imperv * wtuq_road_imperv +
-              q_sunwall * wtuq_sunwall + q_shadewall * wtuq_shadewall;
-
-          const Real qaf_denom = 1.0 / rawu + wtuq_roof + wtuq_road_perv +
-                                 wtuq_road_imperv + wtuq_sunwall +
-                                 wtuq_shadewall;
-          taf = taf_numer / taf_denom;
-          qaf = qaf_numer / qaf_denom;
-
+          computeNewTafAndQaf(c, canyon_wind, thm, rahu, rawu, taf, qaf);
           const Real dth = thm - taf;
           const Real dqh = forc_q - qaf;
           const Real tstar = temp1 * dth;
@@ -598,6 +605,9 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
           }
           obu = zldis / zeta;
         }
+
+        Taf(c) = taf;
+        Qaf(c) = qaf;
       });
 }
 
