@@ -11,8 +11,27 @@
 #define ROOF_FRACTION 0.69999998807907104
 
 namespace URBANXX {
+
+UrbanSurface ::UrbanSurface(int N_LUN, Real temperature) {
+
+  ALLOCATE_VIEW(Temp, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(es, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(esdT, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(qs, Array1DR8, N_LUN);
+  ALLOCATE_VIEW(qsdT, Array1DR8, N_LUN);
+
+  HostArray1DR8 TempH;
+  ALLOCATE_VIEW(TempH, HostArray1DR8, N_LUN);
+  for (int i = 0; i < N_LUN; ++i) {
+    TempH(i) = temperature;
+  }
+  Kokkos::deep_copy(Temp, TempH);
+}
+
 UrbanSurfaceFluxes::UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle)
-    : data_bundle(bundle) {
+    : data_bundle(bundle), Roof(bundle.N_LUN, 292.0),
+      SunlitWall(bundle.N_LUN, 292.0), ShadeWall(bundle.N_LUN, 292.0),
+      ImperviousRoad(bundle.N_LUN, 274.0), PerviousRoad(bundle.N_LUN, 274.0) {
   ForcTemp = bundle.input.ForcTemp;
   ForcTh = bundle.input.ForcPotTemp;
   ForcRho = bundle.input.ForcRho;
@@ -56,6 +75,110 @@ UrbanSurfaceFluxes::UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle)
 #define ZETAT                                                                  \
   0.465 // transition point of flux-gradient relation (temperature profile)
 #define CPAIR 1004.64 // specific heat of dry air [J/kg/K]
+#define SHR_CONST_TKFRZ 273.15
+
+KOKKOS_INLINE_FUNCTION
+void QSat(Real T, Real p, Real &es, Real &esdT, Real &qs, Real &qsdT) {
+  // For water vapor (temperature range 0C-100C)
+  Real a0 = 6.11213476;
+  Real a1 = 0.444007856;
+  Real a2 = 0.143064234e-01;
+  Real a3 = 0.264461437e-03;
+  Real a4 = 0.305903558e-05;
+  Real a5 = 0.196237241e-07;
+  Real a6 = 0.892344772e-10;
+  Real a7 = -0.373208410e-12;
+  Real a8 = 0.209339997e-15;
+  // For derivative:water vapor
+  Real b0 = 0.444017302;
+  Real b1 = 0.286064092e-01;
+  Real b2 = 0.794683137e-03;
+  Real b3 = 0.121211669e-04;
+  Real b4 = 0.103354611e-06;
+  Real b5 = 0.404125005e-09;
+  Real b6 = -0.788037859e-12;
+  Real b7 = -0.114596802e-13;
+  Real b8 = 0.381294516e-16;
+  // For ice (temperature range -75C-0C)
+  Real c0 = 6.11123516;
+  Real c1 = 0.503109514;
+  Real c2 = 0.188369801e-01;
+  Real c3 = 0.420547422e-03;
+  Real c4 = 0.614396778e-05;
+  Real c5 = 0.602780717e-07;
+  Real c6 = 0.387940929e-09;
+  Real c7 = 0.149436277e-11;
+  Real c8 = 0.262655803e-14;
+  // For derivative:ice
+  Real d0 = 0.503277922;
+  Real d1 = 0.377289173e-01;
+  Real d2 = 0.126801703e-02;
+  Real d3 = 0.249468427e-04;
+  Real d4 = 0.313703411e-06;
+  Real d5 = 0.257180651e-08;
+  Real d6 = 0.133268878e-10;
+  Real d7 = 0.394116744e-13;
+  Real d8 = 0.498070196e-16;
+
+  Real T_limit = T - SHR_CONST_TKFRZ;
+  if (T_limit > 100.0)
+    T_limit = 100.0;
+  if (T_limit < -75.0)
+    T_limit = -75.0;
+
+  Real td = T_limit;
+
+  if (td >= 0.0) {
+    es =
+        a0 +
+        td * (a1 +
+              td * (a2 +
+                    td * (a3 +
+                          td * (a4 +
+                                td * (a5 + td * (a6 + td * (a7 + td * a8)))))));
+
+    esdT =
+        b0 +
+        td * (b1 +
+              td * (b2 +
+                    td * (b3 +
+                          td * (b4 +
+                                td * (b5 + td * (b6 + td * (b7 + td * b8)))))));
+
+  } else {
+    es =
+        c0 +
+        td * (c1 +
+              td * (c2 +
+                    td * (c3 +
+                          td * (c4 +
+                                td * (c5 + td * (c6 + td * (c7 + td * c8)))))));
+
+    esdT =
+        d0 +
+        td * (d1 +
+              td * (d2 +
+                    td * (d3 +
+                          td * (d4 +
+                                td * (d5 + td * (d6 + td * (d7 + td * d8)))))));
+  }
+
+  es = es * 100.0;     // pa
+  esdT = esdT * 100.0; // pa/K
+
+  Real vp = 1.0 / (p - 0.378 * es);
+  Real vp1 = 0.622 * vp;
+  Real vp2 = vp1 * vp;
+
+  qs = es * vp1;         // kg/kg
+  qsdT = esdT * vp2 * p; // 1 / K
+}
+
+KOKKOS_INLINE_FUNCTION
+void UrbanSurface::ComputeQsat(int c, Real p) {
+  Real T = Temp(c);
+  QSat(T, p, es(c), esdT(c), qs(c), qsdT(c));
+}
 
 KOKKOS_INLINE_FUNCTION
 void MoninObukIni(Real ur, Real thv, Real dthv, Real zldis, Real z0m, Real &um,
@@ -315,7 +438,7 @@ void ComputeCanyonUWind(Real ht_roof, Real z_d_town, Real z_0_town,
 
   } else {
 
-    canyon_u_wind = canyontop_wind * M_PI / 2.0 * factor; // eqn 3.60
+    canyon_u_wind = canyontop_wind * 2.0 / M_PI * factor; // eqn 3.60
   }
 }
 
@@ -335,16 +458,11 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
                                            // canyon needs to be computed (m)
         const Real lapse_rate = 0.0098;    // dry adiabatic lapse rate (K/m)
 
-        const Real forc_t = ForcTemp(c);
-        const Real forc_u = ForcU(c);
-        const Real forc_v = ForcV(c);
-        const Real forc_th = ForcTh(c);
-        const Real forc_q = ForcQ(c);
-        const Real forc_rho = ForcRho(c);
-
         Real taf = Taf(c);
         Real qaf = Qaf(c);
 
+        const Real forc_u = ForcU(c);
+        const Real forc_v = ForcV(c);
         const Real u2_plus_v2 = std::pow(forc_u, 2.0) + std::pow(forc_v, 2.0);
         const Real velocity = std::pow(u2_plus_v2, 0.5);
         const Real ur = std::max(1.0, velocity);
@@ -352,16 +470,41 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
         const Real hwr = data_bundle.geometry.CanyonHwr(c);
 
         Real um, obu;
+        Real thm, thv, zldis;
+        const Real forc_q = ForcQ(c);
+        const Real forc_th = ForcTh(c);
+
         {
-          const Real thm = forc_t + lapse_rate * forc_hgt_t;
-          const Real thv = forc_th * (1.0 + 0.61 * forc_q);
+          const Real forc_t = ForcTemp(c);
+
+          thm = forc_t + lapse_rate * forc_hgt_t;
+          thv = forc_th * (1.0 + 0.61 * forc_q);
           const Real dth = thm - taf;
           const Real dqh = forc_q - qaf;
           const Real dthv = dth * (1.0 + 0.61 * forc_q) + 0.61 * forc_th * dqh;
-          const Real zldis = forc_hgt_u - z_d_town;
+          zldis = forc_hgt_u - z_d_town;
 
           MoninObukIni(ur, thv, dthv, zldis, z_0_town, um, obu);
         }
+
+        const Real forc_p = ForcPbot(c);
+        Roof.ComputeQsat(c, forc_p);
+        SunlitWall.ComputeQsat(c, forc_p);
+        ShadeWall.ComputeQsat(c, forc_p);
+        ImperviousRoad.ComputeQsat(c, forc_p);
+        PerviousRoad.ComputeQsat(c, forc_p);
+
+        const Real q_roof = Roof.qs(c);
+        const Real q_road_imperv = ImperviousRoad.qs(c);
+        const Real q_road_perv = PerviousRoad.qs(c);
+        const Real q_sunwall = 0.0;
+        const Real q_shadewall = 0.0;
+
+        const Real T_roof = Roof.Temp(c);
+        const Real T_road_imperv = ImperviousRoad.Temp(c);
+        const Real T_road_perv = PerviousRoad.Temp(c);
+        const Real T_sunwall = SunlitWall.Temp(c);
+        const Real T_shadewall = ShadeWall.Temp(c);
 
         Real fm = 0.0;
         for (int iter = 0; iter < 3; ++iter) {
@@ -384,8 +527,76 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
           Real canyon_wind_pow2 =
               std::pow(canyon_u_wind, 2.0) + std::pow(ustar, 2.0);
           Real canyon_wind = std::pow(canyon_wind_pow2, 0.5);
+
+          const Real forc_rho = ForcRho(c);
           Real canyon_resistance =
               CPAIR * forc_rho / (11.8 + 4.2 * canyon_wind);
+
+          const Real wt_road_perv = fPervRoad(c);
+          const Real wt_roof = fRoof(c);
+
+          const Real fwet_roof = 0.0;
+          const Real wtus_roof = wt_roof / canyon_resistance;
+          const Real wtuq_roof = fwet_roof * wt_roof / canyon_resistance;
+
+          const Real wtus_road_perv =
+              wt_road_perv * (1.0 - wt_roof) / canyon_resistance;
+          const Real wtuq_road_perv =
+              wt_road_perv * (1.0 - wt_roof) / canyon_resistance;
+
+          const Real fwet_road_imperv = (qaf > q_road_imperv) ? 1.0 : 0.0;
+          const Real wtus_road_imperv =
+              (1.0 - wt_road_perv) * (1.0 - wt_roof) / canyon_resistance;
+          const Real wtuq_road_imperv = fwet_road_imperv *
+                                        (1.0 - wt_road_perv) * (1.0 - wt_roof) /
+                                        canyon_resistance;
+
+          const Real wtus_sunwall = hwr * (1.0 - wt_roof) / canyon_resistance;
+          const Real wtuq_sunwall = 0.0;
+
+          const Real wtus_shadewall = hwr * (1.0 - wt_roof) / canyon_resistance;
+          const Real wtuq_shadewall = 0.0;
+
+          const Real taf_numer =
+              thm / rahu + T_roof * wtus_roof + T_road_perv * wtus_road_perv +
+              T_road_imperv * wtus_road_imperv + T_sunwall * wtus_sunwall +
+              T_shadewall * wtus_shadewall;
+
+          const Real taf_denom = 1.0 / rahu + wtus_roof + wtus_road_perv +
+                                 wtus_road_imperv + wtus_sunwall +
+                                 wtus_shadewall;
+
+          const Real qaf_numer =
+              forc_q / rawu + q_roof * wtuq_roof +
+              q_road_perv * wtuq_road_perv + q_road_imperv * wtuq_road_imperv +
+              q_sunwall * wtuq_sunwall + q_shadewall * wtuq_shadewall;
+
+          const Real qaf_denom = 1.0 / rawu + wtuq_roof + wtuq_road_perv +
+                                 wtuq_road_imperv + wtuq_sunwall +
+                                 wtuq_shadewall;
+          taf = taf_numer / taf_denom;
+          qaf = qaf_numer / qaf_denom;
+
+          const Real dth = thm - taf;
+          const Real dqh = forc_q - qaf;
+          const Real tstar = temp1 * dth;
+          const Real qstar = temp2 * dqh;
+          const Real thvstar =
+              tstar * (1.0 + 0.61 * forc_q) + 0.61 * forc_th * qstar;
+          Real zeta =
+              zldis * VKC * GRAVITY * thvstar / (std::pow(ustar, 2.0) * thv);
+
+          if (zeta > 0.0) {
+            zeta = std::min(2.0, std::max(zeta, 0.01));
+            um = std::max(ur, 0.1);
+          } else {
+            const Real beta = 1.0;
+            const Real zii = 1000.0;
+            const Real wc =
+                beta * std::pow(-GRAVITY * ustar * thvstar * zii / thv, 0.333);
+            um = std::pow(ur * ur + wc * wc, 0.5);
+          }
+          obu = zldis / zeta;
         }
       });
 }

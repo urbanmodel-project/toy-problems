@@ -7,6 +7,19 @@
 
 namespace URBANXX {
 
+class UrbanSurface {
+
+public:
+  Array1DR8 Temp;
+  Array1DR8 es;
+  Array1DR8 esdT;
+  Array1DR8 qs;
+  Array1DR8 qsdT;
+
+  UrbanSurface(int, Real);
+  KOKKOS_INLINE_FUNCTION void ComputeQsat(int, Real);
+};
+
 class UrbanSurfaceFluxes {
 private:
   Array1DR8 ForcTemp;
@@ -24,6 +37,13 @@ private:
   Array1DR8 Hwr;
   Array1DR8 fPervRoad; // fraction of pervious road w.r.t. total road
   Array1DR8 fRoof;     // fraction of roof w.r.t. grid cell
+
+  UrbanSurface Roof;
+  UrbanSurface SunlitWall;
+  UrbanSurface ShadeWall;
+  UrbanSurface ImperviousRoad;
+  UrbanSurface PerviousRoad;
+
 public:
   UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle);
   void computeSurfaceFluxes();
