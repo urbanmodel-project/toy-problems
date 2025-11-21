@@ -567,6 +567,9 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
         }
 
         computeQsatForSurfaces(c);
+        Real canyon_u_wind;
+        ComputeCanyonUWind(ht_roof, z_d_town, z_0_town, forc_hgt_u,
+                           wind_hgt_canyon, hwr, ur, canyon_u_wind);
 
         Real fm = 0.0;
         for (int iter = 0; iter < 3; ++iter) {
@@ -579,12 +582,6 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
           Real ramu = 1.0 / (ustar * ustar / um);
           Real rahu = 1.0 / (temp1 * ustar);
           Real rawu = 1.0 / (temp2 * ustar);
-
-          Real canyon_u_wind;
-          if (iter == 0) {
-            ComputeCanyonUWind(ht_roof, z_d_town, z_0_town, forc_hgt_u,
-                               wind_hgt_canyon, hwr, ur, canyon_u_wind);
-          }
 
           Real canyon_wind_pow2 =
               std::pow(canyon_u_wind, 2.0) + std::pow(ustar, 2.0);
