@@ -1,3 +1,4 @@
+enable_language(Fortran)
 add_library(kokkos_utils
   vector_add.cpp
 )
@@ -23,6 +24,7 @@ add_library(urban STATIC
   UrbanFluxes.cpp
   Urban.cpp
   kokkos_c_wrappers.cpp
+  f90-mod/Urban.F90
 )
 
 target_include_directories(urban
@@ -36,4 +38,9 @@ target_link_libraries(urban
 )
 
 target_compile_features(urban PUBLIC cxx_std_17)
+
+# Place Fortran modules in a known directory for consumers
+set_target_properties(urban PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
+)
 

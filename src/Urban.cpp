@@ -9,6 +9,7 @@
 #include <Kokkos_Core.hpp>
 #include <memory>
 #include <vector>
+#include <stdexcept>
 
 #include <private/UrbanImpl.h>
 
@@ -150,6 +151,9 @@ UrbanErrorCode UrbanStep(UrbanType handle) {
 
     urban_log(handle, 1, "Step completed");
     return URBAN_SUCCESS;
+  } catch (const std::runtime_error& e) {
+    urban_log(handle, 0, e.what());
+    return URBAN_ERR_INVALID_ARGUMENT;
   } catch (...) {
     return URBAN_ERR_INTERNAL;
   }
@@ -201,11 +205,11 @@ UrbanErrorCode UrbanCopyOutputs(UrbanType handle,
                              double* net_sw, size_t net_sw_size,
                              double* net_lw, size_t net_lw_size,
                              double* flux,  size_t flux_size) {
-  UrbanOutputs out{
-      {.data = net_sw, .size = net_sw_size},
-      {.data = net_lw, .size = net_lw_size},
-      {.data = flux,   .size = flux_size}
-  };
+    UrbanOutputs out{
+      {net_sw, net_sw_size},
+      {net_lw, net_lw_size},
+      {flux,   flux_size}
+    };
   return UrbanGetOutputs(handle, &out);
 }
 

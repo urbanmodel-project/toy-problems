@@ -90,7 +90,10 @@ module urban
 contains
 
   ! Helper to build UrbanArrayD_c from a Fortran real array
-  pure function make_array_d(a) result(x)
+  ! Note: Do not pass temporaries or array expressions here.
+  ! The actual argument must be a persistent, contiguous array whose
+  ! lifetime spans all C calls that use the returned pointer.
+  function make_array_d(a) result(x)
     real(c_double), intent(in), target :: a(:)
     type(UrbanArrayD_c) :: x
     x%data = c_loc(a(1))

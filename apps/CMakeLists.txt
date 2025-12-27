@@ -6,7 +6,6 @@ add_executable(driver_urban driver_urban.cpp)
 add_executable(driver_urban_c_api driver_urban_c_api.cpp)
 add_executable(driver_urban_f
   driver_urban_f.f90
-  ../src/f90-mod/Urban.F90
 )
 
 target_link_libraries(driver_vector_add
@@ -33,6 +32,7 @@ target_link_libraries(driver_urban_f
 target_include_directories(driver_urban_f
   PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    $<TARGET_PROPERTY:urban,Fortran_MODULE_DIRECTORY>
 )
 
 # Ensure Fortran linker is used and modules are generated in a known dir
@@ -41,4 +41,7 @@ set_target_properties(driver_urban_f PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
   Fortran_PREPROCESS YES
 )
+
+# Ensure the Fortran module from the urban library is built before the driver
+add_dependencies(driver_urban_f urban)
 
