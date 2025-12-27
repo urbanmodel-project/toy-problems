@@ -10,23 +10,9 @@
 #include <memory>
 #include <vector>
 
+#include <private/UrbanImpl.h>
+
 using namespace URBANXX;
-
-struct UrbanOpaque_ {
-  UrbanSharedDataBundle bundle;
-  std::unique_ptr<UrbanDataAllocator> allocator;
-  std::unique_ptr<UrbanAlbedo> albedo;
-  std::unique_ptr<UrbanLongwave> longwave;
-  std::unique_ptr<UrbanSurfaceFluxes> fluxes;
-
-  UrbanLogFn logger = nullptr;
-  void* logger_ud = nullptr;
-
-  UrbanOpaque_(int n_lun, int n_rad)
-      : bundle{.geometry{}, .input{}, .Roof{}, .SunlitWall{}, .ShadedWall{},
-               .ImperviousRoad{}, .PerviousRoad{}, .CombinedRoad{},
-               .N_LUN = n_lun, .N_RAD_BAND = n_rad} {}
-};
 
 static void urban_log(UrbanOpaque_* h, int level, const char* msg) {
   if (h && h->logger) h->logger(level, msg, h->logger_ud);
