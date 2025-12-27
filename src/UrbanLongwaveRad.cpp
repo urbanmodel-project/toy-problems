@@ -166,10 +166,22 @@ void UrbanLongwave::setLongwaveInputs() {
 }
 
 void UrbanLongwave::computeNetLongwave() {
-
-  std::cout << "Setting longwave inputs\n";
-
   int N_LUN = data_bundle.N_LUN;
+  auto vf_sr_view = data_bundle.geometry.ViewFactorSkyFromRoad;
+  auto vf_sw_view = data_bundle.geometry.ViewFactorSkyFromWall;
+  auto hwr_view   = data_bundle.geometry.CanyonHwr;
+  auto dwlong_view = data_bundle.input.DownwellingLongRad;
+
+  if (vf_sr_view.extent(0) == 0 || vf_sw_view.extent(0) == 0 ||
+      hwr_view.extent(0) == 0 || dwlong_view.extent(0) == 0) {
+    std::cerr << "UrbanLongwave::computeNetLongwave: one or more views have zero extent:"
+              << " vf_sr=" << vf_sr_view.extent(0)
+              << " vf_sw=" << vf_sw_view.extent(0)
+              << " hwr=" << hwr_view.extent(0)
+              << " dwlong=" << dwlong_view.extent(0)
+              << std::endl;
+    return;
+  }
   Kokkos::parallel_for(
       "ComputeNetSolar", N_LUN, KOKKOS_LAMBDA(const int c) {
         Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyFromRoad;

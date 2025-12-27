@@ -21,6 +21,7 @@ add_library(urban STATIC
   UrbanSolarRad.cpp
   UrbanLongwaveRad.cpp
   UrbanFluxes.cpp
+  Urban_c_api.cpp
 )
 
 target_include_directories(urban

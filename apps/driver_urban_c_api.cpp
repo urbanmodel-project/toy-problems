@@ -1,0 +1,65 @@
+#include <mpi.h>
+#include <Kokkos_Core.hpp>
+#include <urban/urban.h>
+
+#include <cstdio>
+#include <vector>
+
+int main(int argc, char** argv) {
+  MPI_Init(&argc, &argv);
+  Kokkos::initialize(argc, argv);
+  int rank = -1; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  const int N_LUN = 3;
+  const int N_RAD_BAND = 2;
+
+  UrbanConfig cfg{};
+  cfg.N_LUN = N_LUN;
+  cfg.N_RAD_BAND = N_RAD_BAND;
+  cfg.enable_openmp = true;
+  cfg.omp_num_threads = 1;
+
+  UrbanHandle sim = nullptr;
+  if (UrbanCreate(&cfg, &sim) != URBAN_SUCCESS) {
+    if (rank == 0) std::fprintf(stderr, "UrbanCreate failed\n");
+    Kokkos::finalize(); MPI_Finalize(); return 1;
+  }
+
+  UrbanInitialize(sim);
+
+  std::vector<double> solar(N_LUN, 400.0);
+  std::vector<double> longwave(N_LUN, 300.0);
+  std::vector<double> air_temp(N_LUN, 290.0);
+  std::vector<double> wind(N_LUN, 2.0);
+
+  UrbanInputs in{};
+  in.solar_down = {solar.data(), solar.size()};
+  in.longwave_down = {longwave.data(), longwave.size()};
+  in.air_temp = {air_temp.data(), air_temp.size()};
+  in.wind_speed = {wind.data(), wind.size()};
+  UrbanSetInputs(sim, &in);
+
+  UrbanStep(sim);
+
+  std::vector<double> sw(N_LUN), lw(N_LUN), flux(N_LUN);
+  UrbanOutputs out{};
+  out.net_shortwave = {sw.data(), sw.size()};
+  out.net_longwave = {lw.data(), lw.size()};
+  out.surface_flux = {flux.data(), flux.size()};
+  UrbanGetOutputs(sim, &out);
+
+  if (rank == 0) {
+    std::printf("net_sw: ");
+    for (int i = 0; i < N_LUN; ++i) std::printf("%g ", sw[i]);
+    std::printf("\nnet_lw: ");
+    for (int i = 0; i < N_LUN; ++i) std::printf("%g ", lw[i]);
+    std::printf("\nflux: ");
+    for (int i = 0; i < N_LUN; ++i) std::printf("%g ", flux[i]);
+    std::printf("\n");
+  }
+
+  UrbanDestroy(&sim);
+  Kokkos::finalize();
+  MPI_Finalize();
+  return 0;
+}
