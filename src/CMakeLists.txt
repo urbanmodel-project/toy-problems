@@ -22,6 +22,7 @@ add_library(urban STATIC
   UrbanLongwaveRad.cpp
   UrbanFluxes.cpp
   Urban_c_api.cpp
+  kokkos_c_wrappers.cpp
 )
 
 target_include_directories(urban
