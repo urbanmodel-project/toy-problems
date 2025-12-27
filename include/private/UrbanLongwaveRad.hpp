@@ -1,10 +1,10 @@
 #ifndef URBAN_LONGWAVE_RAD_HPP
 #define URBAN_LONGWAVE_RAD_HPP
 
-#include <DataTypes.hpp>
+#include <private/DataTypes.hpp>
 #include <Kokkos_Core.hpp>
-#include <UrbanData.hpp>
-#include <UrbanRadCommon.hpp>
+#include <private/UrbanData.hpp>
+#include <private/UrbanRadCommon.hpp>
 
 namespace URBANXX {
 

@@ -3,7 +3,7 @@
 #ifndef URBAN_DATA_ALLOCATOR_HPP
 #define URBAN_DATA_ALLOCATOR_HPP
 
-#include <UrbanData.hpp> // Required to know the definition of UrbanSharedDataBundle
+#include <private/UrbanData.hpp> // Required to know the definition of UrbanSharedDataBundle
 
 namespace URBANXX {
 /**

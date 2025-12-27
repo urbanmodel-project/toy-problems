@@ -1,6 +1,6 @@
 #include <mpi.h>
 #include <Kokkos_Core.hpp>
-#include <urban/urban.h>
+#include <urban.h>
 
 #include <cstdio>
 #include <vector>

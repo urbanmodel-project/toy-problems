@@ -1,9 +1,9 @@
 #ifndef URBAN_FLUXES_HPP
 #define URBAN_FLUXES_HPP
 
-#include <DataTypes.hpp>
+#include <private/DataTypes.hpp>
 #include <Kokkos_Core.hpp>
-#include <UrbanData.hpp>
+#include <private/UrbanData.hpp>
 
 namespace URBANXX {
 

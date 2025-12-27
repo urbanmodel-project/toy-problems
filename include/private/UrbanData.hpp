@@ -1,7 +1,7 @@
 #ifndef URBAN_DATA_HPP
 #define URBAN_DATA_HPP
 
-#include <DataTypes.hpp>
+#include <private/DataTypes.hpp>
 #include <Kokkos_Core.hpp>
 #include <cmath>
 
