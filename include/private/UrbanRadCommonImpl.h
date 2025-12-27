@@ -1,7 +1,7 @@
 #ifndef URBAN_RAD_COMMON_HPP
 #define URBAN_RAD_COMMON_HPP
 
-#include <private/DataTypes.hpp>
+#include <private/DataTypesImpl.h>
 
 namespace URBANXX {
 struct RadIndices {

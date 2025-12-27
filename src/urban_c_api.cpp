@@ -1,10 +1,10 @@
 #include <urban.h>
 
-#include <private/UrbanData.hpp>
-#include <private/UrbanDataAllocator.hpp>
-#include <private/UrbanSolarRad.hpp>
-#include <private/UrbanLongwaveRad.hpp>
-#include <private/UrbanFluxes.hpp>
+#include <private/UrbanDataImpl.h>
+#include <private/UrbanDataAllocatorImpl.h>
+#include <private/UrbanSolarRadImpl.h>
+#include <private/UrbanLongwaveRadImpl.h>
+#include <private/UrbanFluxesImpl.h>
 
 #include <Kokkos_Core.hpp>
 #include <memory>

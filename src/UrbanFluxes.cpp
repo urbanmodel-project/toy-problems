@@ -1,6 +1,6 @@
 #include <Kokkos_Core.hpp>
-#include <private/UrbanData.hpp>
-#include <private/UrbanFluxes.hpp>
+#include <private/UrbanDataImpl.h>
+#include <private/UrbanFluxesImpl.h>
 #include <cmath>
 #include <iostream>
 
