@@ -2,6 +2,11 @@ module urban
   use, intrinsic :: iso_c_binding
   implicit none
 
+  ! Fortran-friendly opaque wrapper around C UrbanType
+  type :: UrbanType
+    type(c_ptr) :: c_ptr
+  end type UrbanType
+
   ! Opaque handle type for C pointer
   type, bind(C) :: UrbanArrayD_c
     type(c_ptr)        :: data
@@ -42,44 +47,44 @@ module urban
       type(c_ptr) :: msg
     end function UrbanGetErrorString
 
-    function UrbanCreate(cfg, out) bind(C, name="UrbanCreate") result(status)
+    function UrbanCreate_c(cfg, out) bind(C, name="UrbanCreate") result(status)
       import :: UrbanConfig_c, c_int, c_ptr
       type(UrbanConfig_c), intent(in) :: cfg
       type(c_ptr) :: out
       integer(c_int) :: status
-    end function UrbanCreate
+    end function UrbanCreate_c
 
-    function UrbanDestroy(handle) bind(C, name="UrbanDestroy") result(status)
+    function UrbanDestroy_c(handle) bind(C, name="UrbanDestroy") result(status)
       import :: c_ptr, c_int
       type(c_ptr) :: handle
       integer(c_int) :: status
-    end function UrbanDestroy
+    end function UrbanDestroy_c
 
-    function UrbanInitialize(handle) bind(C, name="UrbanInitialize") result(status)
+    function UrbanInitialize_c(handle) bind(C, name="UrbanInitialize") result(status)
       import :: c_ptr, c_int
       type(c_ptr), value :: handle
       integer(c_int) :: status
-    end function UrbanInitialize
+    end function UrbanInitialize_c
 
-    function UrbanSetInputs(handle, in) bind(C, name="UrbanSetInputs") result(status)
+    function UrbanSetInputs_c(handle, in) bind(C, name="UrbanSetInputs") result(status)
       import :: c_ptr, c_int, UrbanInputs_c
       type(c_ptr), value :: handle
       type(UrbanInputs_c), intent(in) :: in
       integer(c_int) :: status
-    end function UrbanSetInputs
+    end function UrbanSetInputs_c
 
-    function UrbanStep(handle) bind(C, name="UrbanStep") result(status)
+    function UrbanStep_c(handle) bind(C, name="UrbanStep") result(status)
       import :: c_ptr, c_int
       type(c_ptr), value :: handle
       integer(c_int) :: status
-    end function UrbanStep
+    end function UrbanStep_c
 
-    function UrbanGetOutputs(handle, out) bind(C, name="UrbanGetOutputs") result(status)
+    function UrbanGetOutputs_c(handle, out) bind(C, name="UrbanGetOutputs") result(status)
       import :: c_ptr, c_int, UrbanOutputs_c
       type(c_ptr), value :: handle
       type(UrbanOutputs_c), intent(inout) :: out
       integer(c_int) :: status
-    end function UrbanGetOutputs
+    end function UrbanGetOutputs_c
   end interface
 
 contains
@@ -91,5 +96,45 @@ contains
     x%data = c_loc(a(1))
     x%size = size(a, kind=c_size_t)
   end function make_array_d
+
+  ! Fortran-friendly wrappers that accept UrbanType and forward to C bindings
+  function UrbanCreate(cfg, sim) result(status)
+    type(UrbanConfig_c), intent(in) :: cfg
+    type(UrbanType), intent(inout) :: sim
+    integer(c_int) :: status
+    status = UrbanCreate_c(cfg, sim%c_ptr)
+  end function UrbanCreate
+
+  function UrbanDestroy(sim) result(status)
+    type(UrbanType), intent(inout) :: sim
+    integer(c_int) :: status
+    status = UrbanDestroy_c(sim%c_ptr)
+  end function UrbanDestroy
+
+  function UrbanInitialize(sim) result(status)
+    type(UrbanType), intent(in) :: sim
+    integer(c_int) :: status
+    status = UrbanInitialize_c(sim%c_ptr)
+  end function UrbanInitialize
+
+  function UrbanSetInputs(sim, in) result(status)
+    type(UrbanType), intent(in) :: sim
+    type(UrbanInputs_c), intent(in) :: in
+    integer(c_int) :: status
+    status = UrbanSetInputs_c(sim%c_ptr, in)
+  end function UrbanSetInputs
+
+  function UrbanStep(sim) result(status)
+    type(UrbanType), intent(in) :: sim
+    integer(c_int) :: status
+    status = UrbanStep_c(sim%c_ptr)
+  end function UrbanStep
+
+  function UrbanGetOutputs(sim, out) result(status)
+    type(UrbanType), intent(in) :: sim
+    type(UrbanOutputs_c), intent(inout) :: out
+    integer(c_int) :: status
+    status = UrbanGetOutputs_c(sim%c_ptr, out)
+  end function UrbanGetOutputs
 
 end module urban

@@ -7,7 +7,7 @@ program driver_urban_f
   integer(c_int), parameter :: N_RAD_BAND = 2
 
   type(UrbanConfig_c) :: cfg
-  type(c_ptr) :: sim
+  type(UrbanType) :: sim
   integer(c_int) :: status
   real(c_double) :: solar(N_LUN), longwave(N_LUN), air_temp(N_LUN), wind(N_LUN)
   integer :: i
