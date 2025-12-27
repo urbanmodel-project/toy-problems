@@ -6,7 +6,7 @@ add_executable(driver_urban driver_urban.cpp)
 add_executable(driver_urban_c_api driver_urban_c_api.cpp)
 add_executable(driver_urban_f
   driver_urban_f.f90
-  ../src/Urban.F90
+  ../src/f90-mod/Urban.F90
 )
 
 target_link_libraries(driver_vector_add
