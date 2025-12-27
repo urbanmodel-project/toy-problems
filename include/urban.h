@@ -33,12 +33,12 @@ extern "C" {
 #endif
 
 /* Error/status codes */
-typedef enum UrbanStatus {
+typedef enum UrbanErrorCode {
   URBAN_SUCCESS = 0,
   URBAN_ERR_INVALID_ARGUMENT = 1,
   URBAN_ERR_NOT_INITIALIZED = 2,
   URBAN_ERR_INTERNAL = 3
-} UrbanStatus;
+} UrbanErrorCode;
 
 /* Opaque handle to a simulation instance */
 typedef struct UrbanOpaque_* UrbanHandle;
@@ -85,31 +85,31 @@ typedef struct UrbanOutputs {
 } UrbanOutputs;
 
 /* Lifecycle */
-URBAN_API UrbanStatus UrbanCreate(const UrbanConfig* cfg, UrbanHandle* out);
-URBAN_API UrbanStatus UrbanDestroy(UrbanHandle* handle);
+URBAN_API UrbanErrorCode UrbanCreate(const UrbanConfig* cfg, UrbanHandle* out);
+URBAN_API UrbanErrorCode UrbanDestroy(UrbanHandle* handle);
 
 /* Optional utilities */
-URBAN_API UrbanStatus UrbanSetLogger(UrbanHandle handle, UrbanLogFn fn, void* user_data);
-URBAN_API const char* UrbanGetErrorString(UrbanStatus err);
+URBAN_API UrbanErrorCode UrbanSetLogger(UrbanHandle handle, UrbanLogFn fn, void* user_data);
+URBAN_API const char* UrbanGetErrorString(UrbanErrorCode err);
 
 /* Initialization and data binding */
-URBAN_API UrbanStatus UrbanInitialize(UrbanHandle handle);
+URBAN_API UrbanErrorCode UrbanInitialize(UrbanHandle handle);
 /* Bind or update inputs; arrays are borrowed for duration of call unless documented otherwise */
-URBAN_API UrbanStatus UrbanSetInputs(UrbanHandle handle, const UrbanInputs* in);
+URBAN_API UrbanErrorCode UrbanSetInputs(UrbanHandle handle, const UrbanInputs* in);
 
 /* Advance physics; internal orchestrates albedo, longwave, fluxes */
-URBAN_API UrbanStatus UrbanStep(UrbanHandle handle);
+URBAN_API UrbanErrorCode UrbanStep(UrbanHandle handle);
 
 /* Retrieve outputs; caller supplies buffers or receives borrowed views */
-URBAN_API UrbanStatus UrbanGetOutputs(UrbanHandle handle, UrbanOutputs* out);
+URBAN_API UrbanErrorCode UrbanGetOutputs(UrbanHandle handle, UrbanOutputs* out);
 
 /* Optional: simple option setters to avoid ABI churn */
-URBAN_API UrbanStatus UrbanSetOptionInt(UrbanHandle handle, const char* name, int value);
-URBAN_API UrbanStatus UrbanSetOptionDouble(UrbanHandle handle, const char* name, double value);
-URBAN_API UrbanStatus UrbanSetOptionBool(UrbanHandle handle, const char* name, bool value);
+URBAN_API UrbanErrorCode UrbanSetOptionInt(UrbanHandle handle, const char* name, int value);
+URBAN_API UrbanErrorCode UrbanSetOptionDouble(UrbanHandle handle, const char* name, double value);
+URBAN_API UrbanErrorCode UrbanSetOptionBool(UrbanHandle handle, const char* name, bool value);
 
 /* Optional: copy-out helpers if you prefer owned outputs */
-URBAN_API UrbanStatus UrbanCopyOutputs(UrbanHandle handle,
+URBAN_API UrbanErrorCode UrbanCopyOutputs(UrbanHandle handle,
                                        double* net_sw, size_t net_sw_size,
                                        double* net_lw, size_t net_lw_size,
                                        double* flux,  size_t flux_size);

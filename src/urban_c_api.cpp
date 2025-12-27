@@ -20,7 +20,7 @@ static void urban_log(UrbanOpaque_* h, int level, const char* msg) {
 
 extern "C" {
 
-const char* UrbanGetErrorString(UrbanStatus err) {
+const char* UrbanGetErrorString(UrbanErrorCode err) {
   switch (err) {
     case URBAN_SUCCESS: return "success";
     case URBAN_ERR_INVALID_ARGUMENT: return "invalid argument";
@@ -30,14 +30,14 @@ const char* UrbanGetErrorString(UrbanStatus err) {
   }
 }
 
-UrbanStatus UrbanSetLogger(UrbanHandle handle, UrbanLogFn fn, void* user_data) {
+UrbanErrorCode UrbanSetLogger(UrbanHandle handle, UrbanLogFn fn, void* user_data) {
   if (!handle) return URBAN_ERR_INVALID_ARGUMENT;
   handle->logger = fn;
   handle->logger_ud = user_data;
   return URBAN_SUCCESS;
 }
 
-UrbanStatus UrbanCreate(const UrbanConfig* cfg, UrbanHandle* out) {
+UrbanErrorCode UrbanCreate(const UrbanConfig* cfg, UrbanHandle* out) {
   if (!cfg || !out) return URBAN_ERR_INVALID_ARGUMENT;
   if (cfg->N_LUN <= 0 || cfg->N_RAD_BAND <= 0) return URBAN_ERR_INVALID_ARGUMENT;
   try {
@@ -54,7 +54,7 @@ UrbanStatus UrbanCreate(const UrbanConfig* cfg, UrbanHandle* out) {
   }
 }
 
-UrbanStatus UrbanDestroy(UrbanHandle* handle) {
+UrbanErrorCode UrbanDestroy(UrbanHandle* handle) {
   if (!handle || !*handle) return URBAN_ERR_INVALID_ARGUMENT;
   try {
     delete *handle;
@@ -65,7 +65,7 @@ UrbanStatus UrbanDestroy(UrbanHandle* handle) {
   }
 }
 
-UrbanStatus UrbanInitialize(UrbanHandle handle) {
+UrbanErrorCode UrbanInitialize(UrbanHandle handle) {
   if (!handle || !handle->allocator) return URBAN_ERR_INVALID_ARGUMENT;
   try {
     handle->allocator->allocate_all_views();
@@ -91,7 +91,7 @@ static void copy_1d_to_dual(const UrbanArrayD& arr, HostArray1DR8& host, Array1D
   Kokkos::deep_copy(dev, host);
 }
 
-UrbanStatus UrbanSetInputs(UrbanHandle handle, const UrbanInputs* in) {
+UrbanErrorCode UrbanSetInputs(UrbanHandle handle, const UrbanInputs* in) {
   if (!handle || !in) return URBAN_ERR_INVALID_ARGUMENT;
   try {
     // Map a minimal subset of inputs to available fields.
@@ -132,7 +132,7 @@ UrbanStatus UrbanSetInputs(UrbanHandle handle, const UrbanInputs* in) {
   }
 }
 
-UrbanStatus UrbanStep(UrbanHandle handle) {
+UrbanErrorCode UrbanStep(UrbanHandle handle) {
   if (!handle) return URBAN_ERR_INVALID_ARGUMENT;
   if (!handle->albedo || !handle->longwave || !handle->fluxes)
     return URBAN_ERR_INVALID_ARGUMENT;
@@ -155,7 +155,7 @@ UrbanStatus UrbanStep(UrbanHandle handle) {
   }
 }
 
-UrbanStatus UrbanGetOutputs(UrbanHandle handle, UrbanOutputs* out) {
+UrbanErrorCode UrbanGetOutputs(UrbanHandle handle, UrbanOutputs* out) {
   if (!handle || !out) return URBAN_ERR_INVALID_ARGUMENT;
   try {
     const int n = handle->bundle.N_LUN;
@@ -193,11 +193,11 @@ UrbanStatus UrbanGetOutputs(UrbanHandle handle, UrbanOutputs* out) {
   }
 }
 
-UrbanStatus UrbanSetOptionInt(UrbanHandle, const char*, int) { return URBAN_SUCCESS; }
-UrbanStatus UrbanSetOptionDouble(UrbanHandle, const char*, double) { return URBAN_SUCCESS; }
-UrbanStatus UrbanSetOptionBool(UrbanHandle, const char*, bool) { return URBAN_SUCCESS; }
+UrbanErrorCode UrbanSetOptionInt(UrbanHandle, const char*, int) { return URBAN_SUCCESS; }
+UrbanErrorCode UrbanSetOptionDouble(UrbanHandle, const char*, double) { return URBAN_SUCCESS; }
+UrbanErrorCode UrbanSetOptionBool(UrbanHandle, const char*, bool) { return URBAN_SUCCESS; }
 
-UrbanStatus UrbanCopyOutputs(UrbanHandle handle,
+UrbanErrorCode UrbanCopyOutputs(UrbanHandle handle,
                              double* net_sw, size_t net_sw_size,
                              double* net_lw, size_t net_lw_size,
                              double* flux,  size_t flux_size) {
