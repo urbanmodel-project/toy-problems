@@ -1,4 +1,4 @@
-module urban_f
+module urban
   use, intrinsic :: iso_c_binding
   implicit none
 
@@ -92,4 +92,4 @@ contains
     x%size = size(a, kind=c_size_t)
   end function make_array_d
 
-end module urban_f
+end module urban

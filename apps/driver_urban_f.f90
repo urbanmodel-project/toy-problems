@@ -1,6 +1,6 @@
 program driver_urban_f
   use, intrinsic :: iso_c_binding
-  use urban_f
+  use urban
   implicit none
 
   integer(c_int), parameter :: N_LUN = 3
