@@ -22,14 +22,14 @@ program driver_urban_f
   cfg%enable_openmp = .true.
   cfg%omp_num_threads = 1
 
-  status = UrbanCreate(cfg, sim)
+  call UrbanCreate(cfg, sim, status)
   if (status /= 0) then
     print *, 'UrbanCreate failed, status=', status
     call urban_kokkos_finalize()
     stop 1
   end if
 
-  status = UrbanInitialize(sim)
+  call UrbanInitialize(sim, status)
   if (status /= 0) then
     print *, 'UrbanInitialize failed, status=', status
     call urban_kokkos_finalize()
@@ -48,24 +48,24 @@ program driver_urban_f
   in%air_temp = make_array_d(air_temp)
   in%wind_speed = make_array_d(wind)
 
-  status = UrbanSetInputs(sim, in)
+  call UrbanSetInputs(sim, in, status)
   if (status /= 0) print *, 'UrbanSetInputs status=', status
 
-  status = UrbanStep(sim)
+  call UrbanStep(sim, status)
   if (status /= 0) print *, 'UrbanStep status=', status
 
   out%net_shortwave = make_array_d(sw)
   out%net_longwave  = make_array_d(lw)
   out%surface_flux  = make_array_d(flux)
 
-  status = UrbanGetOutputs(sim, out)
+  call UrbanGetOutputs(sim, out, status)
   if (status /= 0) print *, 'UrbanGetOutputs status=', status
 
   print *, 'net_sw:', sw
   print *, 'net_lw:', lw
   print *, 'flux  :', flux
 
-  status = UrbanDestroy(sim)
+  call UrbanDestroy(sim, status)
   if (status /= 0) print *, 'UrbanDestroy status=', status
 
   call urban_kokkos_finalize()

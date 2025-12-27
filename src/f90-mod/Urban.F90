@@ -98,43 +98,43 @@ contains
   end function make_array_d
 
   ! Fortran-friendly wrappers that accept UrbanType and forward to C bindings
-  function UrbanCreate(cfg, sim) result(status)
+  subroutine UrbanCreate(cfg, sim, status)
     type(UrbanConfig_c), intent(in) :: cfg
     type(UrbanType), intent(inout) :: sim
-    integer(c_int) :: status
+    integer(c_int), intent(out) :: status
     status = UrbanCreate_c(cfg, sim%c_ptr)
-  end function UrbanCreate
+  end subroutine UrbanCreate
 
-  function UrbanDestroy(sim) result(status)
+  subroutine UrbanDestroy(sim, status)
     type(UrbanType), intent(inout) :: sim
-    integer(c_int) :: status
+    integer(c_int), intent(out) :: status
     status = UrbanDestroy_c(sim%c_ptr)
-  end function UrbanDestroy
+  end subroutine UrbanDestroy
 
-  function UrbanInitialize(sim) result(status)
+  subroutine UrbanInitialize(sim, status)
     type(UrbanType), intent(in) :: sim
-    integer(c_int) :: status
+    integer(c_int), intent(out) :: status
     status = UrbanInitialize_c(sim%c_ptr)
-  end function UrbanInitialize
+  end subroutine UrbanInitialize
 
-  function UrbanSetInputs(sim, in) result(status)
+  subroutine UrbanSetInputs(sim, in, status)
     type(UrbanType), intent(in) :: sim
     type(UrbanInputs_c), intent(in) :: in
-    integer(c_int) :: status
+    integer(c_int), intent(out) :: status
     status = UrbanSetInputs_c(sim%c_ptr, in)
-  end function UrbanSetInputs
+  end subroutine UrbanSetInputs
 
-  function UrbanStep(sim) result(status)
+  subroutine UrbanStep(sim, status)
     type(UrbanType), intent(in) :: sim
-    integer(c_int) :: status
+    integer(c_int), intent(out) :: status
     status = UrbanStep_c(sim%c_ptr)
-  end function UrbanStep
+  end subroutine UrbanStep
 
-  function UrbanGetOutputs(sim, out) result(status)
+  subroutine UrbanGetOutputs(sim, out, status)
     type(UrbanType), intent(in) :: sim
     type(UrbanOutputs_c), intent(inout) :: out
-    integer(c_int) :: status
+    integer(c_int), intent(out) :: status
     status = UrbanGetOutputs_c(sim%c_ptr, out)
-  end function UrbanGetOutputs
+  end subroutine UrbanGetOutputs
 
 end module urban
