@@ -1,6 +1,6 @@
 #include <Kokkos_Core.hpp>
-#include <UrbanData.hpp>
-#include <UrbanDataAllocator.hpp>
+#include <private/UrbanDataImpl.h>
+#include <private/UrbanDataAllocatorImpl.h>
 #include <iomanip>
 #include <iostream>
 

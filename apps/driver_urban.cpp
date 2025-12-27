@@ -1,10 +1,10 @@
 #include <mpi.h>
 #include <Kokkos_Core.hpp>
-#include <UrbanData.hpp>
-#include <UrbanDataAllocator.hpp>
-#include <UrbanSolarRad.hpp>
-#include <UrbanLongwaveRad.hpp>
-#include <UrbanFluxes.hpp>
+#include <private/UrbanDataImpl.h>
+#include <private/UrbanDataAllocatorImpl.h>
+#include <private/UrbanSolarRadImpl.h>
+#include <private/UrbanLongwaveRadImpl.h>
+#include <private/UrbanFluxesImpl.h>
 #include <iostream>
 
 using namespace URBANXX;
