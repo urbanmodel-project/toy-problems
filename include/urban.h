@@ -18,17 +18,17 @@ extern "C" {
 /* Visibility (ok for static libs; future-proof for shared) */
 #if defined(_WIN32)
   #if defined(URBAN_BUILD_SHARED)
-    #define URBAN_API __declspec(dllexport)
+    #define URBAN_EXTERN __declspec(dllexport)
   #elif defined(URBAN_USE_SHARED)
-    #define URBAN_API __declspec(dllimport)
+    #define URBAN_EXTERN __declspec(dllimport)
   #else
-    #define URBAN_API
+    #define URBAN_EXTERN
   #endif
 #else
   #if defined(URBAN_BUILD_SHARED)
-    #define URBAN_API __attribute__((visibility("default")))
+    #define URBAN_EXTERN __attribute__((visibility("default")))
   #else
-    #define URBAN_API
+    #define URBAN_EXTERN
   #endif
 #endif
 
@@ -85,31 +85,31 @@ typedef struct UrbanOutputs {
 } UrbanOutputs;
 
 /* Lifecycle */
-URBAN_API UrbanErrorCode UrbanCreate(const UrbanConfig* cfg, UrbanHandle* out);
-URBAN_API UrbanErrorCode UrbanDestroy(UrbanHandle* handle);
+URBAN_EXTERN UrbanErrorCode UrbanCreate(const UrbanConfig* cfg, UrbanHandle* out);
+URBAN_EXTERN UrbanErrorCode UrbanDestroy(UrbanHandle* handle);
 
 /* Optional utilities */
-URBAN_API UrbanErrorCode UrbanSetLogger(UrbanHandle handle, UrbanLogFn fn, void* user_data);
-URBAN_API const char* UrbanGetErrorString(UrbanErrorCode err);
+URBAN_EXTERN UrbanErrorCode UrbanSetLogger(UrbanHandle handle, UrbanLogFn fn, void* user_data);
+URBAN_EXTERN const char* UrbanGetErrorString(UrbanErrorCode err);
 
 /* Initialization and data binding */
-URBAN_API UrbanErrorCode UrbanInitialize(UrbanHandle handle);
+URBAN_EXTERN UrbanErrorCode UrbanInitialize(UrbanHandle handle);
 /* Bind or update inputs; arrays are borrowed for duration of call unless documented otherwise */
-URBAN_API UrbanErrorCode UrbanSetInputs(UrbanHandle handle, const UrbanInputs* in);
+URBAN_EXTERN UrbanErrorCode UrbanSetInputs(UrbanHandle handle, const UrbanInputs* in);
 
 /* Advance physics; internal orchestrates albedo, longwave, fluxes */
-URBAN_API UrbanErrorCode UrbanStep(UrbanHandle handle);
+URBAN_EXTERN UrbanErrorCode UrbanStep(UrbanHandle handle);
 
 /* Retrieve outputs; caller supplies buffers or receives borrowed views */
-URBAN_API UrbanErrorCode UrbanGetOutputs(UrbanHandle handle, UrbanOutputs* out);
+URBAN_EXTERN UrbanErrorCode UrbanGetOutputs(UrbanHandle handle, UrbanOutputs* out);
 
 /* Optional: simple option setters to avoid ABI churn */
-URBAN_API UrbanErrorCode UrbanSetOptionInt(UrbanHandle handle, const char* name, int value);
-URBAN_API UrbanErrorCode UrbanSetOptionDouble(UrbanHandle handle, const char* name, double value);
-URBAN_API UrbanErrorCode UrbanSetOptionBool(UrbanHandle handle, const char* name, bool value);
+URBAN_EXTERN UrbanErrorCode UrbanSetOptionInt(UrbanHandle handle, const char* name, int value);
+URBAN_EXTERN UrbanErrorCode UrbanSetOptionDouble(UrbanHandle handle, const char* name, double value);
+URBAN_EXTERN UrbanErrorCode UrbanSetOptionBool(UrbanHandle handle, const char* name, bool value);
 
 /* Optional: copy-out helpers if you prefer owned outputs */
-URBAN_API UrbanErrorCode UrbanCopyOutputs(UrbanHandle handle,
+URBAN_EXTERN UrbanErrorCode UrbanCopyOutputs(UrbanHandle handle,
                                        double* net_sw, size_t net_sw_size,
                                        double* net_lw, size_t net_lw_size,
                                        double* flux,  size_t flux_size);
