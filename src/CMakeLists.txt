@@ -21,7 +21,7 @@ add_library(urban STATIC
   UrbanSolarRad.cpp
   UrbanLongwaveRad.cpp
   UrbanFluxes.cpp
-  Urban_c_api.cpp
+  Urban.cpp
   kokkos_c_wrappers.cpp
 )
 

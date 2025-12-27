@@ -2,7 +2,7 @@
 #ifndef URBAN_PRIVATE_URBANIMPL_H
 #define URBAN_PRIVATE_URBANIMPL_H
 
-#include <urban.h>
+#include <Urban.h>
 
 #include <private/UrbanDataImpl.h>
 #include <private/UrbanDataAllocatorImpl.h>
