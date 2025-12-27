@@ -24,9 +24,16 @@ struct _p_UrbanType {
   void* logger_ud = nullptr;
 
   explicit _p_UrbanType(int n_lun, int n_rad)
-      : bundle{.geometry{}, .input{}, .Roof{}, .SunlitWall{}, .ShadedWall{},
-               .ImperviousRoad{}, .PerviousRoad{}, .CombinedRoad{},
-               .N_LUN = n_lun, .N_RAD_BAND = n_rad} {}
+      : bundle{URBANXX::CanyonGeometryData{},
+               URBANXX::AtmosphereInputData{},
+               URBANXX::RoofDataType{},
+               URBANXX::WallDataType{},
+               URBANXX::WallDataType{},
+               URBANXX::RoadDataType{},
+               URBANXX::RoadDataType{},
+               URBANXX::CombinedRoadDataType{},
+               n_lun,
+               n_rad} {}
 };
 
 #endif // URBAN_PRIVATE_URBANIMPL_H

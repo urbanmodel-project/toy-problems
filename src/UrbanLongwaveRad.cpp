@@ -5,6 +5,8 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <stdexcept>
+#include <string>
 
 #define STEBOL 5.670374419e-8
 #define PERVIOUS_ROAD_FRACTION 0.16666667163372040
@@ -174,16 +176,16 @@ void UrbanLongwave::computeNetLongwave() {
 
   if (vf_sr_view.extent(0) == 0 || vf_sw_view.extent(0) == 0 ||
       hwr_view.extent(0) == 0 || dwlong_view.extent(0) == 0) {
-    std::cerr << "UrbanLongwave::computeNetLongwave: one or more views have zero extent:"
-              << " vf_sr=" << vf_sr_view.extent(0)
-              << " vf_sw=" << vf_sw_view.extent(0)
-              << " hwr=" << hwr_view.extent(0)
-              << " dwlong=" << dwlong_view.extent(0)
-              << std::endl;
-    return;
+    throw std::runtime_error(
+        std::string("UrbanLongwave::computeNetLongwave: one or more views have zero extent:") +
+        " vf_sr=" + std::to_string(vf_sr_view.extent(0)) +
+        " vf_sw=" + std::to_string(vf_sw_view.extent(0)) +
+        " hwr=" + std::to_string(hwr_view.extent(0)) +
+        " dwlong=" + std::to_string(dwlong_view.extent(0))
+    );
   }
   Kokkos::parallel_for(
-      "ComputeNetSolar", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "ComputeNetLongwave", N_LUN, KOKKOS_LAMBDA(const int c) {
         Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyFromRoad;
         Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyFromWall;
         Array1DR8 hwr = data_bundle.geometry.CanyonHwr;

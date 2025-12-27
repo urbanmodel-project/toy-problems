@@ -47,16 +47,26 @@ module urban
       type(c_ptr) :: msg
     end function UrbanGetErrorString
 
+    function UrbanSetLogger_c(handle, fn, user_data) bind(C, name="UrbanSetLogger") result(status)
+      import :: c_int, c_ptr, c_funptr
+      type(c_ptr),  value :: handle
+      type(c_funptr), value :: fn
+      type(c_ptr),  value :: user_data
+      integer(c_int) :: status
+    end function UrbanSetLogger_c
+
     function UrbanCreate_c(cfg, out) bind(C, name="UrbanCreate") result(status)
       import :: UrbanConfig_c, c_int, c_ptr
       type(UrbanConfig_c), intent(in) :: cfg
-      type(c_ptr) :: out
+      type(c_ptr), intent(out) :: out
       integer(c_int) :: status
     end function UrbanCreate_c
 
     function UrbanDestroy_c(handle) bind(C, name="UrbanDestroy") result(status)
       import :: c_ptr, c_int
-      type(c_ptr) :: handle
+      ! Pointer-to-pointer: C signature is UrbanDestroy(UrbanType* handle)
+      ! Pass-by-reference so C can null out the pointer.
+      type(c_ptr), intent(inout) :: handle
       integer(c_int) :: status
     end function UrbanDestroy_c
 
@@ -90,7 +100,10 @@ module urban
 contains
 
   ! Helper to build UrbanArrayD_c from a Fortran real array
-  pure function make_array_d(a) result(x)
+  ! Note: Do not pass temporaries or array expressions here.
+  ! The actual argument must be a persistent, contiguous array whose
+  ! lifetime spans all C calls that use the returned pointer.
+  function make_array_d(a) result(x)
     real(c_double), intent(in), target :: a(:)
     type(UrbanArrayD_c) :: x
     x%data = c_loc(a(1))
@@ -105,10 +118,24 @@ contains
     status = UrbanCreate_c(cfg, sim%c_ptr)
   end subroutine UrbanCreate
 
+  ! Set a logging callback. `fn` must be a C-interoperable procedure with bind(C)
+  ! signature: subroutine log(level, message, user_data) bind(C)
+  !   integer(c_int), value :: level
+  !   type(c_ptr), value :: message
+  !   type(c_ptr), value :: user_data
+  subroutine UrbanSetLogger(sim, fn, user_data, status)
+    type(UrbanType), intent(inout) :: sim
+    type(c_funptr), intent(in) :: fn
+    type(c_ptr),    intent(in) :: user_data
+    integer(c_int), intent(out) :: status
+    status = UrbanSetLogger_c(sim%c_ptr, fn, user_data)
+  end subroutine UrbanSetLogger
+
   subroutine UrbanDestroy(sim, status)
     type(UrbanType), intent(inout) :: sim
     integer(c_int), intent(out) :: status
     status = UrbanDestroy_c(sim%c_ptr)
+    if (status == 0_c_int) sim%c_ptr = c_null_ptr
   end subroutine UrbanDestroy
 
   subroutine UrbanInitialize(sim, status)
