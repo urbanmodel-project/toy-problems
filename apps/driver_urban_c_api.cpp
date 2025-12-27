@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
   cfg.enable_openmp = true;
   cfg.omp_num_threads = 1;
 
-  UrbanHandle sim = nullptr;
+  UrbanType sim = nullptr;
   if (UrbanCreate(&cfg, &sim) != URBAN_SUCCESS) {
     if (rank == 0) std::fprintf(stderr, "UrbanCreate failed\n");
     Kokkos::finalize(); MPI_Finalize(); return 1;

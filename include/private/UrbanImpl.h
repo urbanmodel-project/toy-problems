@@ -13,7 +13,7 @@
 #include <memory>
 
 // Opaque handle backing struct used by the C API
-struct UrbanOpaque_ {
+struct _p_UrbanType {
   URBANXX::UrbanSharedDataBundle bundle;
   std::unique_ptr<URBANXX::UrbanDataAllocator> allocator;
   std::unique_ptr<URBANXX::UrbanAlbedo> albedo;
@@ -23,7 +23,7 @@ struct UrbanOpaque_ {
   UrbanLogFn logger = nullptr;
   void* logger_ud = nullptr;
 
-  explicit UrbanOpaque_(int n_lun, int n_rad)
+  explicit _p_UrbanType(int n_lun, int n_rad)
       : bundle{.geometry{}, .input{}, .Roof{}, .SunlitWall{}, .ShadedWall{},
                .ImperviousRoad{}, .PerviousRoad{}, .CombinedRoad{},
                .N_LUN = n_lun, .N_RAD_BAND = n_rad} {}
