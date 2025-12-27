@@ -1,4 +1,5 @@
 program driver_urban_f
+#include <finclude/UrbanMacros.h>
   use, intrinsic :: iso_c_binding
   use urban
   implicit none
@@ -22,19 +23,9 @@ program driver_urban_f
   cfg%enable_openmp = .true.
   cfg%omp_num_threads = 1
 
-  call UrbanCreate(cfg, sim, status)
-  if (status /= 0) then
-    print *, 'UrbanCreate failed, status=', status
-    call urban_kokkos_finalize()
-    stop 1
-  end if
+  CallA(UrbanCreate(cfg, sim, status))
 
-  call UrbanInitialize(sim, status)
-  if (status /= 0) then
-    print *, 'UrbanInitialize failed, status=', status
-    call urban_kokkos_finalize()
-    stop 1
-  end if
+  CallA(UrbanInitialize(sim, status))
 
   do i = 1, N_LUN
     solar(i) = 400.0d0
@@ -48,25 +39,21 @@ program driver_urban_f
   in%air_temp = make_array_d(air_temp)
   in%wind_speed = make_array_d(wind)
 
-  call UrbanSetInputs(sim, in, status)
-  if (status /= 0) print *, 'UrbanSetInputs status=', status
+  CallA(UrbanSetInputs(sim, in, status))
 
-  call UrbanStep(sim, status)
-  if (status /= 0) print *, 'UrbanStep status=', status
+  CallA(UrbanStep(sim, status))
 
   out%net_shortwave = make_array_d(sw)
   out%net_longwave  = make_array_d(lw)
   out%surface_flux  = make_array_d(flux)
 
-  call UrbanGetOutputs(sim, out, status)
-  if (status /= 0) print *, 'UrbanGetOutputs status=', status
+  CallA(UrbanGetOutputs(sim, out, status))
 
   print *, 'net_sw:', sw
   print *, 'net_lw:', lw
   print *, 'flux  :', flux
 
-  call UrbanDestroy(sim, status)
-  if (status /= 0) print *, 'UrbanDestroy status=', status
+  CallA(UrbanDestroy(sim, status))
 
   call urban_kokkos_finalize()
 

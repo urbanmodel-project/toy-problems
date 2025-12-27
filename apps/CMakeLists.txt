@@ -29,9 +29,16 @@ target_link_libraries(driver_urban_f
     urban
 )
 
+# Make Fortran preprocessor find headers under the repo's include/
+target_include_directories(driver_urban_f
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
 # Ensure Fortran linker is used and modules are generated in a known dir
 set_target_properties(driver_urban_f PROPERTIES
   LINKER_LANGUAGE Fortran
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
+  Fortran_PREPROCESS YES
 )
 
