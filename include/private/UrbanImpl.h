@@ -1,6 +1,6 @@
 // Internal implementation header for Urban C API handle
-#ifndef URBAN_PRIVATE_URBANIMPL_H
-#define URBAN_PRIVATE_URBANIMPL_H
+#ifndef URBAN_IMPL_H
+#define URBAN_IMPL_H
 
 #include <Urban.h>
 
@@ -36,4 +36,4 @@ struct _p_UrbanType {
                n_rad} {}
 };
 
-#endif // URBAN_PRIVATE_URBANIMPL_H
+#endif // URBAN_IMPL_H

@@ -1,6 +1,6 @@
 // Common data type aliases for Kokkos views used across Urban module.
-#ifndef URBAN_PRIVATE_DATATYPES_HPP
-#define URBAN_PRIVATE_DATATYPES_HPP
+#ifndef URBAN_DATATYPES_IMPL_H
+#define URBAN_DATATYPES_IMPL_H
 
 #include <Kokkos_Core.hpp>
 
@@ -18,4 +18,4 @@ using HostArray2DR8 = Kokkos::View<R8 **, Kokkos::HostSpace>;
 using Array3DR8 = Kokkos::View<R8 ***, Kokkos::DefaultExecutionSpace>;
 using HostArray3DR8 = Kokkos::View<R8 ***, Kokkos::HostSpace>;
 
-#endif // URBAN_PRIVATE_DATATYPES_HPP
+#endif // URBAN_DATATYPES_IMPL_H

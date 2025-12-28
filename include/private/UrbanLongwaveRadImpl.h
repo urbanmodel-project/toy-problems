@@ -1,8 +1,8 @@
-#ifndef URBAN_LONGWAVE_RAD_HPP
-#define URBAN_LONGWAVE_RAD_HPP
+#ifndef URBAN_LONGWAVE_RAD_IMPL_H
+#define URBAN_LONGWAVE_RAD_IMPL_H
 
 #include <Kokkos_Core.hpp>
-#include <private/DataTypesImpl.h>
+#include <private/UrbanDataTypesImpl.h>
 #include <private/UrbanDataImpl.h>
 #include <private/UrbanRadCommonImpl.h>
 
@@ -61,4 +61,4 @@ public:
 };
 } // namespace URBANXX
 
-#endif
+#endif // URBAN_LONGWAVE_RAD_IMPL_H

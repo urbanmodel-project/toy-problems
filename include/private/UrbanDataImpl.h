@@ -1,9 +1,9 @@
-#ifndef URBAN_DATA_HPP
-#define URBAN_DATA_HPP
+#ifndef URBAN_DATA_IMPL_H
+#define URBAN_DATA_IMPL_H
 
 #include <Kokkos_Core.hpp>
 #include <cmath>
-#include <private/DataTypesImpl.h>
+#include <private/UrbanDataTypesImpl.h>
 
 namespace URBANXX {
 
@@ -132,4 +132,4 @@ struct UrbanSharedDataBundle {
   const int N_RAD_BAND;
 };
 } // namespace URBANXX
-#endif
+#endif // URBAN_DATA_IMPL_H
