@@ -16,7 +16,7 @@ module urban
     integer(c_size_t)  :: size
   end type UrbanArrayD_c
 
-  ! UrbanConfig_c: C-interoperable configuration structure
+  ! UrbanConfig: C-interoperable configuration structure
   ! WARNING: Do not directly access or modify member variables (N_LUN,
   ! N_RAD_BAND, enable_openmp, omp_num_threads). Use the provided setter
   ! functions:
@@ -25,14 +25,14 @@ module urban
   !   - UrbanConfigSetEnableOpenMP(cfg, enable, status)
   !   - UrbanConfigSetOMPNumThreads(cfg, num_threads, status)
   ! Direct field access bypasses proper validation and may cause errors.
-  type, bind(C) :: UrbanConfig_c
+  type, bind(C) :: UrbanConfig
     integer(c_int) :: N_LUN
     integer(c_int) :: N_RAD_BAND
     logical(c_bool) :: enable_openmp
     integer(c_int) :: omp_num_threads
-  end type UrbanConfig_c
+  end type UrbanConfig
 
-  ! UrbanInputs_c: C-interoperable input data structure
+  ! UrbanInputs: C-interoperable input data structure
   ! WARNING: Do not directly access or modify member variables (solar_down, 
   ! longwave_down, air_temp, wind_speed). Use the provided setter functions:
   !   - UrbanInputsSetSolarDown(in, array, status)
@@ -40,14 +40,14 @@ module urban
   !   - UrbanInputsSetAirTemp(in, array, status)
   !   - UrbanInputsSetWindSpeed(in, array, status)
   ! Direct field access bypasses proper array handling and may cause errors.
-  type, bind(C) :: UrbanInputs_c
+  type, bind(C) :: UrbanInputs
     type(UrbanArrayD_c) :: solar_down
     type(UrbanArrayD_c) :: longwave_down
     type(UrbanArrayD_c) :: air_temp
     type(UrbanArrayD_c) :: wind_speed
-  end type UrbanInputs_c
+  end type UrbanInputs
 
-  ! UrbanOutputs_c: C-interoperable output data structure
+  ! UrbanOutputs: C-interoperable output data structure
   ! WARNING: Do not directly access or modify member variables (net_shortwave,
   ! net_longwave, surface_flux). Use the provided getter functions before
   ! calling UrbanGetOutputs:
@@ -55,11 +55,11 @@ module urban
   !   - UrbanOutputsGetNetLongwave(out, array, status)
   !   - UrbanOutputsGetSurfaceFlux(out, array, status)
   ! Direct field access bypasses proper array handling and may cause errors.
-  type, bind(C) :: UrbanOutputs_c
+  type, bind(C) :: UrbanOutputs
     type(UrbanArrayD_c) :: net_shortwave
     type(UrbanArrayD_c) :: net_longwave
     type(UrbanArrayD_c) :: surface_flux
-  end type UrbanOutputs_c
+  end type UrbanOutputs
 
   interface
     ! Kokkos C wrapper interfaces
@@ -84,8 +84,8 @@ module urban
     end function UrbanSetLogger_c
 
     function UrbanCreate_c(cfg, out) bind(C, name="UrbanCreate") result(status)
-      import :: UrbanConfig_c, c_int, c_ptr
-      type(UrbanConfig_c), intent(in) :: cfg
+      import :: UrbanConfig, c_int, c_ptr
+      type(UrbanConfig), intent(in) :: cfg
       type(c_ptr), intent(out) :: out
       integer(c_int) :: status
     end function UrbanCreate_c
@@ -105,9 +105,9 @@ module urban
     end function UrbanInitialize_c
 
     function UrbanSetInputs_c(handle, in) bind(C, name="UrbanSetInputs") result(status)
-      import :: c_ptr, c_int, UrbanInputs_c
+      import :: c_ptr, c_int, UrbanInputs
       type(c_ptr), value :: handle
-      type(UrbanInputs_c), intent(in) :: in
+      type(UrbanInputs), intent(in) :: in
       integer(c_int) :: status
     end function UrbanSetInputs_c
 
@@ -118,9 +118,9 @@ module urban
     end function UrbanStep_c
 
     function UrbanGetOutputs_c(handle, out) bind(C, name="UrbanGetOutputs") result(status)
-      import :: c_ptr, c_int, UrbanOutputs_c
+      import :: c_ptr, c_int, UrbanOutputs
       type(c_ptr), value :: handle
-      type(UrbanOutputs_c), intent(inout) :: out
+      type(UrbanOutputs), intent(inout) :: out
       integer(c_int) :: status
     end function UrbanGetOutputs_c
   end interface
@@ -138,9 +138,9 @@ contains
     x%size = size(a, kind=c_size_t)
   end function make_array_d
 
-  ! Setter functions for UrbanConfig_c
+  ! Setter functions for UrbanConfig
   subroutine UrbanConfigSetNLun(cfg, n_lun, status)
-    type(UrbanConfig_c), intent(inout) :: cfg
+    type(UrbanConfig), intent(inout) :: cfg
     integer(c_int), intent(in) :: n_lun
     integer(c_int), intent(out) :: status
     cfg%N_LUN = n_lun
@@ -148,7 +148,7 @@ contains
   end subroutine UrbanConfigSetNLun
 
   subroutine UrbanConfigSetNRadBand(cfg, n_rad_band, status)
-    type(UrbanConfig_c), intent(inout) :: cfg
+    type(UrbanConfig), intent(inout) :: cfg
     integer(c_int), intent(in) :: n_rad_band
     integer(c_int), intent(out) :: status
     cfg%N_RAD_BAND = n_rad_band
@@ -156,7 +156,7 @@ contains
   end subroutine UrbanConfigSetNRadBand
 
   subroutine UrbanConfigSetEnableOpenMP(cfg, enable, status)
-    type(UrbanConfig_c), intent(inout) :: cfg
+    type(UrbanConfig), intent(inout) :: cfg
     logical(c_bool), intent(in) :: enable
     integer(c_int), intent(out) :: status
     cfg%enable_openmp = enable
@@ -164,16 +164,16 @@ contains
   end subroutine UrbanConfigSetEnableOpenMP
 
   subroutine UrbanConfigSetOMPNumThreads(cfg, num_threads, status)
-    type(UrbanConfig_c), intent(inout) :: cfg
+    type(UrbanConfig), intent(inout) :: cfg
     integer(c_int), intent(in) :: num_threads
     integer(c_int), intent(out) :: status
     cfg%omp_num_threads = num_threads
     status = URBAN_SUCCESS
   end subroutine UrbanConfigSetOMPNumThreads
 
-  ! Setter functions for UrbanInputs_c
+  ! Setter functions for UrbanInputs
   subroutine UrbanInputsSetSolarDown(in, a, status)
-    type(UrbanInputs_c), intent(inout) :: in
+    type(UrbanInputs), intent(inout) :: in
     real(c_double), intent(in), target :: a(:)
     integer(c_int), intent(out) :: status
     in%solar_down = make_array_d(a)
@@ -181,7 +181,7 @@ contains
   end subroutine UrbanInputsSetSolarDown
 
   subroutine UrbanInputsSetLongwaveDown(in, a, status)
-    type(UrbanInputs_c), intent(inout) :: in
+    type(UrbanInputs), intent(inout) :: in
     real(c_double), intent(in), target :: a(:)
     integer(c_int), intent(out) :: status
     in%longwave_down = make_array_d(a)
@@ -189,7 +189,7 @@ contains
   end subroutine UrbanInputsSetLongwaveDown
 
   subroutine UrbanInputsSetAirTemp(in, a, status)
-    type(UrbanInputs_c), intent(inout) :: in
+    type(UrbanInputs), intent(inout) :: in
     real(c_double), intent(in), target :: a(:)
     integer(c_int), intent(out) :: status
     in%air_temp = make_array_d(a)
@@ -197,16 +197,16 @@ contains
   end subroutine UrbanInputsSetAirTemp
 
   subroutine UrbanInputsSetWindSpeed(in, a, status)
-    type(UrbanInputs_c), intent(inout) :: in
+    type(UrbanInputs), intent(inout) :: in
     real(c_double), intent(in), target :: a(:)
     integer(c_int), intent(out) :: status
     in%wind_speed = make_array_d(a)
     status = URBAN_SUCCESS
   end subroutine UrbanInputsSetWindSpeed
 
-  ! Getter functions for UrbanOutputs_c
+  ! Getter functions for UrbanOutputs
   subroutine UrbanOutputsGetNetShortwave(out, a, status)
-    type(UrbanOutputs_c), intent(inout) :: out
+    type(UrbanOutputs), intent(inout) :: out
     real(c_double), intent(in), target :: a(:)
     integer(c_int), intent(out) :: status
     out%net_shortwave = make_array_d(a)
@@ -214,7 +214,7 @@ contains
   end subroutine UrbanOutputsGetNetShortwave
 
   subroutine UrbanOutputsGetNetLongwave(out, a, status)
-    type(UrbanOutputs_c), intent(inout) :: out
+    type(UrbanOutputs), intent(inout) :: out
     real(c_double), intent(in), target :: a(:)
     integer(c_int), intent(out) :: status
     out%net_longwave = make_array_d(a)
@@ -222,7 +222,7 @@ contains
   end subroutine UrbanOutputsGetNetLongwave
 
   subroutine UrbanOutputsGetSurfaceFlux(out, a, status)
-    type(UrbanOutputs_c), intent(inout) :: out
+    type(UrbanOutputs), intent(inout) :: out
     real(c_double), intent(in), target :: a(:)
     integer(c_int), intent(out) :: status
     out%surface_flux = make_array_d(a)
@@ -231,7 +231,7 @@ contains
 
   ! Fortran-friendly wrappers that accept UrbanType and forward to C bindings
   subroutine UrbanCreate(cfg, sim, status)
-    type(UrbanConfig_c), intent(in) :: cfg
+    type(UrbanConfig), intent(in) :: cfg
     type(UrbanType), intent(inout) :: sim
     integer(c_int), intent(out) :: status
     status = UrbanCreate_c(cfg, sim%c_ptr)
@@ -265,7 +265,7 @@ contains
 
   subroutine UrbanSetInputs(sim, in, status)
     type(UrbanType), intent(in) :: sim
-    type(UrbanInputs_c), intent(in) :: in
+    type(UrbanInputs), intent(in) :: in
     integer(c_int), intent(out) :: status
     status = UrbanSetInputs_c(sim%c_ptr, in)
   end subroutine UrbanSetInputs
@@ -278,7 +278,7 @@ contains
 
   subroutine UrbanGetOutputs(sim, out, status)
     type(UrbanType), intent(in) :: sim
-    type(UrbanOutputs_c), intent(inout) :: out
+    type(UrbanOutputs), intent(inout) :: out
     integer(c_int), intent(out) :: status
     status = UrbanGetOutputs_c(sim%c_ptr, out)
   end subroutine UrbanGetOutputs
