@@ -29,29 +29,6 @@ int main(int argc, char **argv) {
 
   // Set options via API rather than config struct fields
   {
-    UrbanErrorCode rc = UrbanSetOptionBool(sim, "openmp", true);
-    if (rc != URBAN_SUCCESS) {
-      if (rank == 0)
-        std::fprintf(stderr, "UrbanSetOptionBool(openmp) failed: %s\n",
-                     UrbanGetErrorString(rc));
-      Kokkos::finalize();
-      MPI_Finalize();
-      return 1;
-    }
-  }
-  {
-    UrbanErrorCode rc = UrbanSetOptionInt(sim, "omp_num_threads", 1);
-    if (rc != URBAN_SUCCESS) {
-      if (rank == 0)
-        std::fprintf(stderr, "UrbanSetOptionInt(omp_num_threads) failed: %s\n",
-                     UrbanGetErrorString(rc));
-      Kokkos::finalize();
-      MPI_Finalize();
-      return 1;
-    }
-  }
-
-  {
     UrbanErrorCode rc = UrbanInitialize(sim);
     if (rc != URBAN_SUCCESS) {
       if (rank == 0)

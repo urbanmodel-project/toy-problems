@@ -77,15 +77,6 @@ URBAN_EXTERN UrbanErrorCode UrbanGetOutputs(UrbanType handle,
 // Stepping
 URBAN_EXTERN UrbanErrorCode UrbanStep(UrbanType handle);
 
-// Options
-URBAN_EXTERN UrbanErrorCode UrbanSetOptionInt(UrbanType handle,
-                                              const char *name, int value);
-URBAN_EXTERN UrbanErrorCode UrbanSetOptionDouble(UrbanType handle,
-                                                 const char *name,
-                                                 double value);
-URBAN_EXTERN UrbanErrorCode UrbanSetOptionBool(UrbanType handle,
-                                               const char *name, bool value);
-
 // Logging
 URBAN_EXTERN UrbanErrorCode UrbanSetLogger(UrbanType handle, UrbanLogFn fn,
                                            void *user_data);

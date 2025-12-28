@@ -41,9 +41,9 @@ program driver_urban_f
 
   CallA(UrbanStep(sim, status))
 
-  CallA(UrbanOutputsGetNetShortwave(out, sw, status))
-  CallA(UrbanOutputsGetNetLongwave(out, lw, status))
-  CallA(UrbanOutputsGetSurfaceFlux(out, flux, status))
+  CallA(UrbanOutputsSetNetShortwave(out, sw, status))
+  CallA(UrbanOutputsSetNetLongwave(out, lw, status))
+  CallA(UrbanOutputsSetSurfaceFlux(out, flux, status))
 
   CallA(UrbanGetOutputs(sim, out, status))
 

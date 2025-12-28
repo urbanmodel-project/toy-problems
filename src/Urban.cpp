@@ -101,8 +101,9 @@ static void copy_1d_to_dual(const UrbanArrayD &arr, HostArray1DR8 &host,
   if (!arr.data)
     return;
   const size_t n = arr.size;
-  if (host.extent(0) < (int)n)
-    return; // simplistic bounds guard
+  if (host.extent(0) < static_cast<int>(n)) {
+    throw std::runtime_error("copy_1d_to_dual: host buffer too small");
+  }
   for (size_t i = 0; i < n; ++i)
     host(i) = static_cast<R8>(arr.data[i]);
   Kokkos::deep_copy(dev, host);
@@ -218,16 +219,6 @@ UrbanErrorCode UrbanGetOutputs(UrbanType handle, UrbanOutputs *out) {
   } catch (...) {
     return URBAN_ERR_INTERNAL;
   }
-}
-
-UrbanErrorCode UrbanSetOptionInt(UrbanType, const char *, int) {
-  return URBAN_SUCCESS;
-}
-UrbanErrorCode UrbanSetOptionDouble(UrbanType, const char *, double) {
-  return URBAN_SUCCESS;
-}
-UrbanErrorCode UrbanSetOptionBool(UrbanType, const char *, bool) {
-  return URBAN_SUCCESS;
 }
 
 UrbanErrorCode UrbanCopyOutputs(UrbanType handle, double *net_sw,

@@ -46,9 +46,9 @@ module urban
   ! WARNING: Do not directly access or modify member variables (net_shortwave,
   ! net_longwave, surface_flux). Use the provided getter functions before
   ! calling UrbanGetOutputs:
-  !   - UrbanOutputsGetNetShortwave(out, array, status)
-  !   - UrbanOutputsGetNetLongwave(out, array, status)
-  !   - UrbanOutputsGetSurfaceFlux(out, array, status)
+  !   - UrbanOutputsSetNetShortwave(out, array, status)
+  !   - UrbanOutputsSetNetLongwave(out, array, status)
+  !   - UrbanOutputsSetSurfaceFlux(out, array, status)
   ! Direct field access bypasses proper array handling and may cause errors.
   type, bind(C) :: UrbanOutputs
     type(UrbanArrayD_c) :: net_shortwave
@@ -183,30 +183,30 @@ contains
     status = URBAN_SUCCESS
   end subroutine UrbanInputsSetWindSpeed
 
-  ! Getter functions for UrbanOutputs
-  subroutine UrbanOutputsGetNetShortwave(out, a, status)
+  ! Register output buffers for UrbanOutputs
+  subroutine UrbanOutputsSetNetShortwave(out, a, status)
     type(UrbanOutputs), intent(inout) :: out
     real(kind=c_double), intent(in), target :: a(:)
     integer(kind=c_int), intent(out) :: status
     out%net_shortwave = make_array_d(a)
     status = URBAN_SUCCESS
-  end subroutine UrbanOutputsGetNetShortwave
+  end subroutine UrbanOutputsSetNetShortwave
 
-  subroutine UrbanOutputsGetNetLongwave(out, a, status)
+  subroutine UrbanOutputsSetNetLongwave(out, a, status)
     type(UrbanOutputs), intent(inout) :: out
     real(kind=c_double), intent(in), target :: a(:)
     integer(kind=c_int), intent(out) :: status
     out%net_longwave = make_array_d(a)
     status = URBAN_SUCCESS
-  end subroutine UrbanOutputsGetNetLongwave
+  end subroutine UrbanOutputsSetNetLongwave
 
-  subroutine UrbanOutputsGetSurfaceFlux(out, a, status)
+  subroutine UrbanOutputsSetSurfaceFlux(out, a, status)
     type(UrbanOutputs), intent(inout) :: out
     real(kind=c_double), intent(in), target :: a(:)
     integer(kind=c_int), intent(out) :: status
     out%surface_flux = make_array_d(a)
     status = URBAN_SUCCESS
-  end subroutine UrbanOutputsGetSurfaceFlux
+  end subroutine UrbanOutputsSetSurfaceFlux
 
   ! Fortran-friendly wrappers that accept UrbanType and forward to C bindings
   subroutine UrbanCreate(cfg, sim, status)
