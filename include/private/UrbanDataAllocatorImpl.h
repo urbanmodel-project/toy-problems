@@ -1,9 +1,9 @@
-// UranDataAllocator.hpp
+// UrbanDataAllocatorImpl.h
 
-#ifndef URBAN_DATA_ALLOCATOR_HPP
-#define URBAN_DATA_ALLOCATOR_HPP
+#ifndef URBAN_DATA_ALLOCATOR_IMPL_H
+#define URBAN_DATA_ALLOCATOR_IMPL_H
 
-#include <UrbanData.hpp> // Required to know the definition of UrbanSharedDataBundle
+#include <private/UrbanDataImpl.h> // Required to know the definition of UrbanSharedDataBundle
 
 namespace URBANXX {
 /**
@@ -37,4 +37,4 @@ public:
 };
 } // namespace URBANXX
 
-#endif // DATA_ALLOCATOR_HPP
+#endif // URBAN_DATA_ALLOCATOR_IMPL_H

@@ -1,10 +1,10 @@
-#ifndef URBAN_SOLAR_RAD_HPP
-#define URBAN_SOLAR_RAD_HPP
+#ifndef URBAN_SOLAR_RAD_IMPL_H
+#define URBAN_SOLAR_RAD_IMPL_H
 
-#include <DataTypes.hpp>
 #include <Kokkos_Core.hpp>
-#include <UrbanData.hpp>
-#include <UrbanRadCommon.hpp>
+#include <private/UrbanDataTypesImpl.h>
+#include <private/UrbanDataImpl.h>
+#include <private/UrbanRadCommonImpl.h>
 
 namespace URBANXX {
 
@@ -57,4 +57,4 @@ public:
 };
 } // namespace URBANXX
 
-#endif
+#endif // URBAN_SOLAR_RAD_IMPL_H

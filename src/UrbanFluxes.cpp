@@ -1,8 +1,8 @@
 #include <Kokkos_Core.hpp>
-#include <UrbanData.hpp>
-#include <UrbanFluxes.hpp>
 #include <cmath>
 #include <iostream>
+#include <private/UrbanDataImpl.h>
+#include <private/UrbanFluxesImpl.h>
 
 #define ALLOCATE_VIEW(viewname, type, ...)                                     \
   viewname = type(#viewname, __VA_ARGS__);

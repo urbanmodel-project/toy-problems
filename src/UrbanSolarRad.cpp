@@ -1,10 +1,10 @@
 #include <Kokkos_Core.hpp>
-#include <UrbanData.hpp>
-#include <UrbanRadCommon.hpp>
-#include <UrbanSolarRad.hpp>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <private/UrbanDataImpl.h>
+#include <private/UrbanRadCommonImpl.h>
+#include <private/UrbanSolarRadImpl.h>
 
 namespace URBANXX {
 
