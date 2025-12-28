@@ -1,10 +1,10 @@
 #include <Kokkos_Core.hpp>
-#include <private/UrbanDataImpl.h>
-#include <private/UrbanLongwaveRadImpl.h>
-#include <private/UrbanRadCommonImpl.h>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <private/UrbanDataImpl.h>
+#include <private/UrbanLongwaveRadImpl.h>
+#include <private/UrbanRadCommonImpl.h>
 #include <stdexcept>
 #include <string>
 
@@ -171,18 +171,18 @@ void UrbanLongwave::computeNetLongwave() {
   int N_LUN = data_bundle.N_LUN;
   auto vf_sr_view = data_bundle.geometry.ViewFactorSkyFromRoad;
   auto vf_sw_view = data_bundle.geometry.ViewFactorSkyFromWall;
-  auto hwr_view   = data_bundle.geometry.CanyonHwr;
+  auto hwr_view = data_bundle.geometry.CanyonHwr;
   auto dwlong_view = data_bundle.input.DownwellingLongRad;
 
   if (vf_sr_view.extent(0) == 0 || vf_sw_view.extent(0) == 0 ||
       hwr_view.extent(0) == 0 || dwlong_view.extent(0) == 0) {
     throw std::runtime_error(
-        std::string("UrbanLongwave::computeNetLongwave: one or more views have zero extent:") +
+        std::string("UrbanLongwave::computeNetLongwave: one or more views have "
+                    "zero extent:") +
         " vf_sr=" + std::to_string(vf_sr_view.extent(0)) +
         " vf_sw=" + std::to_string(vf_sw_view.extent(0)) +
         " hwr=" + std::to_string(hwr_view.extent(0)) +
-        " dwlong=" + std::to_string(dwlong_view.extent(0))
-    );
+        " dwlong=" + std::to_string(dwlong_view.extent(0)));
   }
   Kokkos::parallel_for(
       "ComputeNetLongwave", N_LUN, KOKKOS_LAMBDA(const int c) {

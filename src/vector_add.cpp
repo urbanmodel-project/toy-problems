@@ -1,6 +1,6 @@
 #include "kokkos_utils/vector_add.hpp"
-#include <private/DataTypesImpl.h>
 #include <iostream>
+#include <private/DataTypesImpl.h>
 
 namespace kokkos_utils {
 

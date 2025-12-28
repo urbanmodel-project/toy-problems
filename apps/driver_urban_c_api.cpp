@@ -1,14 +1,15 @@
-#include <mpi.h>
 #include <Kokkos_Core.hpp>
 #include <Urban.h>
+#include <mpi.h>
 
 #include <cstdio>
 #include <vector>
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   MPI_Init(&argc, &argv);
   Kokkos::initialize(argc, argv);
-  int rank = -1; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int rank = -1;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   const int N_LUN = 3;
   const int N_RAD_BAND = 2;
@@ -19,31 +20,46 @@ int main(int argc, char** argv) {
 
   UrbanType sim = nullptr;
   if (UrbanCreate(&cfg, &sim) != URBAN_SUCCESS) {
-    if (rank == 0) std::fprintf(stderr, "UrbanCreate failed\n");
-    Kokkos::finalize(); MPI_Finalize(); return 1;
+    if (rank == 0)
+      std::fprintf(stderr, "UrbanCreate failed\n");
+    Kokkos::finalize();
+    MPI_Finalize();
+    return 1;
   }
 
   // Set options via API rather than config struct fields
   {
     UrbanErrorCode rc = UrbanSetOptionBool(sim, "openmp", true);
     if (rc != URBAN_SUCCESS) {
-      if (rank == 0) std::fprintf(stderr, "UrbanSetOptionBool(openmp) failed: %s\n", UrbanGetErrorString(rc));
-      Kokkos::finalize(); MPI_Finalize(); return 1;
+      if (rank == 0)
+        std::fprintf(stderr, "UrbanSetOptionBool(openmp) failed: %s\n",
+                     UrbanGetErrorString(rc));
+      Kokkos::finalize();
+      MPI_Finalize();
+      return 1;
     }
   }
   {
     UrbanErrorCode rc = UrbanSetOptionInt(sim, "omp_num_threads", 1);
     if (rc != URBAN_SUCCESS) {
-      if (rank == 0) std::fprintf(stderr, "UrbanSetOptionInt(omp_num_threads) failed: %s\n", UrbanGetErrorString(rc));
-      Kokkos::finalize(); MPI_Finalize(); return 1;
+      if (rank == 0)
+        std::fprintf(stderr, "UrbanSetOptionInt(omp_num_threads) failed: %s\n",
+                     UrbanGetErrorString(rc));
+      Kokkos::finalize();
+      MPI_Finalize();
+      return 1;
     }
   }
 
   {
     UrbanErrorCode rc = UrbanInitialize(sim);
     if (rc != URBAN_SUCCESS) {
-      if (rank == 0) std::fprintf(stderr, "UrbanInitialize failed: %s\n", UrbanGetErrorString(rc));
-      Kokkos::finalize(); MPI_Finalize(); return 1;
+      if (rank == 0)
+        std::fprintf(stderr, "UrbanInitialize failed: %s\n",
+                     UrbanGetErrorString(rc));
+      Kokkos::finalize();
+      MPI_Finalize();
+      return 1;
     }
   }
 
@@ -60,16 +76,23 @@ int main(int argc, char** argv) {
   {
     UrbanErrorCode rc = UrbanSetInputs(sim, &in);
     if (rc != URBAN_SUCCESS) {
-      if (rank == 0) std::fprintf(stderr, "UrbanSetInputs failed: %s\n", UrbanGetErrorString(rc));
-      Kokkos::finalize(); MPI_Finalize(); return 1;
+      if (rank == 0)
+        std::fprintf(stderr, "UrbanSetInputs failed: %s\n",
+                     UrbanGetErrorString(rc));
+      Kokkos::finalize();
+      MPI_Finalize();
+      return 1;
     }
   }
 
   {
     UrbanErrorCode rc = UrbanStep(sim);
     if (rc != URBAN_SUCCESS) {
-      if (rank == 0) std::fprintf(stderr, "UrbanStep failed: %s\n", UrbanGetErrorString(rc));
-      Kokkos::finalize(); MPI_Finalize(); return 1;
+      if (rank == 0)
+        std::fprintf(stderr, "UrbanStep failed: %s\n", UrbanGetErrorString(rc));
+      Kokkos::finalize();
+      MPI_Finalize();
+      return 1;
     }
   }
 
@@ -81,26 +104,37 @@ int main(int argc, char** argv) {
   {
     UrbanErrorCode rc = UrbanGetOutputs(sim, &out);
     if (rc != URBAN_SUCCESS) {
-      if (rank == 0) std::fprintf(stderr, "UrbanGetOutputs failed: %s\n", UrbanGetErrorString(rc));
-      Kokkos::finalize(); MPI_Finalize(); return 1;
+      if (rank == 0)
+        std::fprintf(stderr, "UrbanGetOutputs failed: %s\n",
+                     UrbanGetErrorString(rc));
+      Kokkos::finalize();
+      MPI_Finalize();
+      return 1;
     }
   }
 
   if (rank == 0) {
     std::printf("net_sw: ");
-    for (int i = 0; i < N_LUN; ++i) std::printf("%g ", sw[i]);
+    for (int i = 0; i < N_LUN; ++i)
+      std::printf("%g ", sw[i]);
     std::printf("\nnet_lw: ");
-    for (int i = 0; i < N_LUN; ++i) std::printf("%g ", lw[i]);
+    for (int i = 0; i < N_LUN; ++i)
+      std::printf("%g ", lw[i]);
     std::printf("\nflux: ");
-    for (int i = 0; i < N_LUN; ++i) std::printf("%g ", flux[i]);
+    for (int i = 0; i < N_LUN; ++i)
+      std::printf("%g ", flux[i]);
     std::printf("\n");
   }
 
   {
     UrbanErrorCode rc = UrbanDestroy(&sim);
     if (rc != URBAN_SUCCESS) {
-      if (rank == 0) std::fprintf(stderr, "UrbanDestroy failed: %s\n", UrbanGetErrorString(rc));
-      Kokkos::finalize(); MPI_Finalize(); return 1;
+      if (rank == 0)
+        std::fprintf(stderr, "UrbanDestroy failed: %s\n",
+                     UrbanGetErrorString(rc));
+      Kokkos::finalize();
+      MPI_Finalize();
+      return 1;
     }
   }
   Kokkos::finalize();

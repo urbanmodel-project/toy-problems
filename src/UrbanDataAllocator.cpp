@@ -1,8 +1,8 @@
 #include <Kokkos_Core.hpp>
-#include <private/UrbanDataImpl.h>
-#include <private/UrbanDataAllocatorImpl.h>
 #include <iomanip>
 #include <iostream>
+#include <private/UrbanDataAllocatorImpl.h>
+#include <private/UrbanDataImpl.h>
 
 namespace URBANXX {
 // Constructor Definition

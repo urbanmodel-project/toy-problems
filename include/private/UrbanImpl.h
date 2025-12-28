@@ -4,11 +4,11 @@
 
 #include <Urban.h>
 
-#include <private/UrbanDataImpl.h>
 #include <private/UrbanDataAllocatorImpl.h>
-#include <private/UrbanSolarRadImpl.h>
-#include <private/UrbanLongwaveRadImpl.h>
+#include <private/UrbanDataImpl.h>
 #include <private/UrbanFluxesImpl.h>
+#include <private/UrbanLongwaveRadImpl.h>
+#include <private/UrbanSolarRadImpl.h>
 
 #include <memory>
 
@@ -21,7 +21,7 @@ struct _p_UrbanType {
   std::unique_ptr<URBANXX::UrbanSurfaceFluxes> fluxes;
 
   UrbanLogFn logger = nullptr;
-  void* logger_ud = nullptr;
+  void *logger_ud = nullptr;
 
   explicit _p_UrbanType(int n_lun, int n_rad)
       : bundle{URBANXX::CanyonGeometryData{},
