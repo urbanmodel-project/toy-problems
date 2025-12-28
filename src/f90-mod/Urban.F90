@@ -35,11 +35,11 @@ module urban
 
   interface
     ! Kokkos C wrapper interfaces
-    subroutine urban_kokkos_initialize() bind(C, name="urban_kokkos_initialize")
-    end subroutine urban_kokkos_initialize
+    subroutine UrbanKokkosInitialize() bind(C, name="UrbanKokkosInitialize")
+    end subroutine UrbanKokkosInitialize
 
-    subroutine urban_kokkos_finalize() bind(C, name="urban_kokkos_finalize")
-    end subroutine urban_kokkos_finalize
+    subroutine UrbanKokkosFinalize() bind(C, name="UrbanKokkosFinalize")
+    end subroutine UrbanKokkosFinalize
 
     function UrbanGetErrorString(err) bind(C, name="UrbanGetErrorString") result(msg)
       import :: c_int, c_ptr

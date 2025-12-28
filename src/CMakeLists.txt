@@ -23,7 +23,7 @@ add_library(urban STATIC
   UrbanLongwaveRad.cpp
   UrbanFluxes.cpp
   Urban.cpp
-  kokkos_c_wrappers.cpp
+  KokkosWrappers.cpp
   f90-mod/Urban.F90
 )
 

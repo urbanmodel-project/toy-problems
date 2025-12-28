@@ -16,7 +16,7 @@ program driver_urban_f
   real(c_double) :: sw(N_LUN), lw(N_LUN), flux(N_LUN)
   type(UrbanOutputs_c) :: out
 
-  call urban_kokkos_initialize()
+  call UrbanKokkosInitialize()
 
   cfg%N_LUN = N_LUN
   cfg%N_RAD_BAND = N_RAD_BAND
@@ -55,6 +55,6 @@ program driver_urban_f
 
   CallA(UrbanDestroy(sim, status))
 
-  call urban_kokkos_finalize()
+  call UrbanKokkosFinalize()
 
 end program driver_urban_f
