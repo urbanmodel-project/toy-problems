@@ -3,7 +3,7 @@ module urban
   implicit none
 
   ! Status codes
-  integer(c_int), parameter :: URBAN_SUCCESS = 0
+  integer(kind=c_int), parameter :: URBAN_SUCCESS = 0
 
   ! Fortran-friendly opaque wrapper around C UrbanType
   type :: UrbanType
@@ -12,8 +12,8 @@ module urban
 
   ! Opaque handle type for C pointer
   type, bind(C) :: UrbanArrayD_c
-    type(c_ptr)        :: data
-    integer(c_size_t)  :: size
+    type(c_ptr) :: data
+    integer(kind=c_size_t) :: size
   end type UrbanArrayD_c
 
   ! UrbanConfig: C-interoperable configuration structure
@@ -23,12 +23,12 @@ module urban
   !   - UrbanConfigSetNRadBand(cfg, n_rad_band, status)
   ! Direct field access bypasses proper validation and may cause errors.
   type, bind(C) :: UrbanConfig
-    integer(c_int) :: N_LUN
-    integer(c_int) :: N_RAD_BAND
+    integer(kind=c_int) :: N_LUN
+    integer(kind=c_int) :: N_RAD_BAND
   end type UrbanConfig
 
   ! UrbanInputs: C-interoperable input data structure
-  ! WARNING: Do not directly access or modify member variables (solar_down, 
+  ! WARNING: Do not directly access or modify member variables (solar_down,
   ! longwave_down, air_temp, wind_speed). Use the provided setter functions:
   !   - UrbanInputsSetSolarDown(in, array, status)
   !   - UrbanInputsSetLongwaveDown(in, array, status)
@@ -66,23 +66,23 @@ module urban
 
     function UrbanGetErrorString(err) bind(C, name="UrbanGetErrorString") result(msg)
       import :: c_int, c_ptr
-      integer(c_int), value :: err
+      integer(kind=c_int), value :: err
       type(c_ptr) :: msg
     end function UrbanGetErrorString
 
     function UrbanSetLogger_c(handle, fn, user_data) bind(C, name="UrbanSetLogger") result(status)
       import :: c_int, c_ptr, c_funptr
-      type(c_ptr),  value :: handle
+      type(c_ptr), value :: handle
       type(c_funptr), value :: fn
-      type(c_ptr),  value :: user_data
-      integer(c_int) :: status
+      type(c_ptr), value :: user_data
+      integer(kind=c_int) :: status
     end function UrbanSetLogger_c
 
     function UrbanCreate_c(cfg, out) bind(C, name="UrbanCreate") result(status)
       import :: UrbanConfig, c_int, c_ptr
       type(UrbanConfig), intent(in) :: cfg
       type(c_ptr), intent(out) :: out
-      integer(c_int) :: status
+      integer(kind=c_int) :: status
     end function UrbanCreate_c
 
     function UrbanDestroy_c(handle) bind(C, name="UrbanDestroy") result(status)
@@ -90,33 +90,33 @@ module urban
       ! Pointer-to-pointer: C signature is UrbanDestroy(UrbanType* handle)
       ! Pass-by-reference so C can null out the pointer.
       type(c_ptr), intent(inout) :: handle
-      integer(c_int) :: status
+      integer(kind=c_int) :: status
     end function UrbanDestroy_c
 
     function UrbanInitialize_c(handle) bind(C, name="UrbanInitialize") result(status)
       import :: c_ptr, c_int
       type(c_ptr), value :: handle
-      integer(c_int) :: status
+      integer(kind=c_int) :: status
     end function UrbanInitialize_c
 
     function UrbanSetInputs_c(handle, in) bind(C, name="UrbanSetInputs") result(status)
       import :: c_ptr, c_int, UrbanInputs
       type(c_ptr), value :: handle
       type(UrbanInputs), intent(in) :: in
-      integer(c_int) :: status
+      integer(kind=c_int) :: status
     end function UrbanSetInputs_c
 
     function UrbanStep_c(handle) bind(C, name="UrbanStep") result(status)
       import :: c_ptr, c_int
       type(c_ptr), value :: handle
-      integer(c_int) :: status
+      integer(kind=c_int) :: status
     end function UrbanStep_c
 
     function UrbanGetOutputs_c(handle, out) bind(C, name="UrbanGetOutputs") result(status)
       import :: c_ptr, c_int, UrbanOutputs
       type(c_ptr), value :: handle
       type(UrbanOutputs), intent(inout) :: out
-      integer(c_int) :: status
+      integer(kind=c_int) :: status
     end function UrbanGetOutputs_c
   end interface
 
@@ -127,7 +127,7 @@ contains
   ! The actual argument must be a persistent, contiguous array whose
   ! lifetime spans all C calls that use the returned pointer.
   function make_array_d(a) result(x)
-    real(c_double), intent(in), target :: a(:)
+    real(kind=c_double), intent(in), target :: a(:)
     type(UrbanArrayD_c) :: x
     x%data = c_loc(a(1))
     x%size = size(a, kind=c_size_t)
@@ -136,16 +136,16 @@ contains
   ! Setter functions for UrbanConfig
   subroutine UrbanConfigSetNLun(cfg, n_lun, status)
     type(UrbanConfig), intent(inout) :: cfg
-    integer(c_int), intent(in) :: n_lun
-    integer(c_int), intent(out) :: status
+    integer(kind=c_int), intent(in) :: n_lun
+    integer(kind=c_int), intent(out) :: status
     cfg%N_LUN = n_lun
     status = URBAN_SUCCESS
   end subroutine UrbanConfigSetNLun
 
   subroutine UrbanConfigSetNRadBand(cfg, n_rad_band, status)
     type(UrbanConfig), intent(inout) :: cfg
-    integer(c_int), intent(in) :: n_rad_band
-    integer(c_int), intent(out) :: status
+    integer(kind=c_int), intent(in) :: n_rad_band
+    integer(kind=c_int), intent(out) :: status
     cfg%N_RAD_BAND = n_rad_band
     status = URBAN_SUCCESS
   end subroutine UrbanConfigSetNRadBand
@@ -153,32 +153,32 @@ contains
   ! Setter functions for UrbanInputs
   subroutine UrbanInputsSetSolarDown(in, a, status)
     type(UrbanInputs), intent(inout) :: in
-    real(c_double), intent(in), target :: a(:)
-    integer(c_int), intent(out) :: status
+    real(kind=c_double), intent(in), target :: a(:)
+    integer(kind=c_int), intent(out) :: status
     in%solar_down = make_array_d(a)
     status = URBAN_SUCCESS
   end subroutine UrbanInputsSetSolarDown
 
   subroutine UrbanInputsSetLongwaveDown(in, a, status)
     type(UrbanInputs), intent(inout) :: in
-    real(c_double), intent(in), target :: a(:)
-    integer(c_int), intent(out) :: status
+    real(kind=c_double), intent(in), target :: a(:)
+    integer(kind=c_int), intent(out) :: status
     in%longwave_down = make_array_d(a)
     status = URBAN_SUCCESS
   end subroutine UrbanInputsSetLongwaveDown
 
   subroutine UrbanInputsSetAirTemp(in, a, status)
     type(UrbanInputs), intent(inout) :: in
-    real(c_double), intent(in), target :: a(:)
-    integer(c_int), intent(out) :: status
+    real(kind=c_double), intent(in), target :: a(:)
+    integer(kind=c_int), intent(out) :: status
     in%air_temp = make_array_d(a)
     status = URBAN_SUCCESS
   end subroutine UrbanInputsSetAirTemp
 
   subroutine UrbanInputsSetWindSpeed(in, a, status)
     type(UrbanInputs), intent(inout) :: in
-    real(c_double), intent(in), target :: a(:)
-    integer(c_int), intent(out) :: status
+    real(kind=c_double), intent(in), target :: a(:)
+    integer(kind=c_int), intent(out) :: status
     in%wind_speed = make_array_d(a)
     status = URBAN_SUCCESS
   end subroutine UrbanInputsSetWindSpeed
@@ -186,24 +186,24 @@ contains
   ! Getter functions for UrbanOutputs
   subroutine UrbanOutputsGetNetShortwave(out, a, status)
     type(UrbanOutputs), intent(inout) :: out
-    real(c_double), intent(in), target :: a(:)
-    integer(c_int), intent(out) :: status
+    real(kind=c_double), intent(in), target :: a(:)
+    integer(kind=c_int), intent(out) :: status
     out%net_shortwave = make_array_d(a)
     status = URBAN_SUCCESS
   end subroutine UrbanOutputsGetNetShortwave
 
   subroutine UrbanOutputsGetNetLongwave(out, a, status)
     type(UrbanOutputs), intent(inout) :: out
-    real(c_double), intent(in), target :: a(:)
-    integer(c_int), intent(out) :: status
+    real(kind=c_double), intent(in), target :: a(:)
+    integer(kind=c_int), intent(out) :: status
     out%net_longwave = make_array_d(a)
     status = URBAN_SUCCESS
   end subroutine UrbanOutputsGetNetLongwave
 
   subroutine UrbanOutputsGetSurfaceFlux(out, a, status)
     type(UrbanOutputs), intent(inout) :: out
-    real(c_double), intent(in), target :: a(:)
-    integer(c_int), intent(out) :: status
+    real(kind=c_double), intent(in), target :: a(:)
+    integer(kind=c_int), intent(out) :: status
     out%surface_flux = make_array_d(a)
     status = URBAN_SUCCESS
   end subroutine UrbanOutputsGetSurfaceFlux
@@ -212,7 +212,7 @@ contains
   subroutine UrbanCreate(cfg, sim, status)
     type(UrbanConfig), intent(in) :: cfg
     type(UrbanType), intent(inout) :: sim
-    integer(c_int), intent(out) :: status
+    integer(kind=c_int), intent(out) :: status
     status = UrbanCreate_c(cfg, sim%c_ptr)
   end subroutine UrbanCreate
 
@@ -224,41 +224,41 @@ contains
   subroutine UrbanSetLogger(sim, fn, user_data, status)
     type(UrbanType), intent(inout) :: sim
     type(c_funptr), intent(in) :: fn
-    type(c_ptr),    intent(in) :: user_data
-    integer(c_int), intent(out) :: status
+    type(c_ptr), intent(in) :: user_data
+    integer(kind=c_int), intent(out) :: status
     status = UrbanSetLogger_c(sim%c_ptr, fn, user_data)
   end subroutine UrbanSetLogger
 
   subroutine UrbanDestroy(sim, status)
     type(UrbanType), intent(inout) :: sim
-    integer(c_int), intent(out) :: status
+    integer(kind=c_int), intent(out) :: status
     status = UrbanDestroy_c(sim%c_ptr)
     if (status == 0_c_int) sim%c_ptr = c_null_ptr
   end subroutine UrbanDestroy
 
   subroutine UrbanInitialize(sim, status)
     type(UrbanType), intent(in) :: sim
-    integer(c_int), intent(out) :: status
+    integer(kind=c_int), intent(out) :: status
     status = UrbanInitialize_c(sim%c_ptr)
   end subroutine UrbanInitialize
 
   subroutine UrbanSetInputs(sim, in, status)
     type(UrbanType), intent(in) :: sim
     type(UrbanInputs), intent(in) :: in
-    integer(c_int), intent(out) :: status
+    integer(kind=c_int), intent(out) :: status
     status = UrbanSetInputs_c(sim%c_ptr, in)
   end subroutine UrbanSetInputs
 
   subroutine UrbanStep(sim, status)
     type(UrbanType), intent(in) :: sim
-    integer(c_int), intent(out) :: status
+    integer(kind=c_int), intent(out) :: status
     status = UrbanStep_c(sim%c_ptr)
   end subroutine UrbanStep
 
   subroutine UrbanGetOutputs(sim, out, status)
     type(UrbanType), intent(in) :: sim
     type(UrbanOutputs), intent(inout) :: out
-    integer(c_int), intent(out) :: status
+    integer(kind=c_int), intent(out) :: status
     status = UrbanGetOutputs_c(sim%c_ptr, out)
   end subroutine UrbanGetOutputs
 

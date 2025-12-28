@@ -4,16 +4,16 @@ program driver_urban_f
   use urban
   implicit none
 
-  integer(c_int), parameter :: N_LUN = 3
-  integer(c_int), parameter :: N_RAD_BAND = 2
+  integer(kind=c_int), parameter :: N_LUN = 3
+  integer(kind=c_int), parameter :: N_RAD_BAND = 2
 
   type(UrbanConfig) :: cfg
   type(UrbanType) :: sim
-  integer(c_int) :: status
-  real(c_double) :: solar(N_LUN), longwave(N_LUN), air_temp(N_LUN), wind(N_LUN)
+  integer(kind=c_int) :: status
+  real(kind=c_double) :: solar(N_LUN), longwave(N_LUN), air_temp(N_LUN), wind(N_LUN)
   integer :: i
   type(UrbanInputs) :: in
-  real(c_double) :: sw(N_LUN), lw(N_LUN), flux(N_LUN)
+  real(kind=c_double) :: sw(N_LUN), lw(N_LUN), flux(N_LUN)
   type(UrbanOutputs) :: out
 
   call UrbanKokkosInitialize()
