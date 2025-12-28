@@ -20,8 +20,6 @@ program driver_urban_f
 
   CallA(UrbanConfigSetNLun(cfg, N_LUN, status))
   CallA(UrbanConfigSetNRadBand(cfg, N_RAD_BAND, status))
-  CallA(UrbanConfigSetEnableOpenMP(cfg, .true._c_bool, status))
-  CallA(UrbanConfigSetOMPNumThreads(cfg, 1, status))
 
   CallA(UrbanCreate(cfg, sim, status))
 
