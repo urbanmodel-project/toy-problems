@@ -2,6 +2,9 @@ module urban
   use, intrinsic :: iso_c_binding
   implicit none
 
+  ! Status codes
+  integer(c_int), parameter :: URBAN_SUCCESS = 0
+
   ! Fortran-friendly opaque wrapper around C UrbanType
   type :: UrbanType
     type(c_ptr) :: c_ptr
@@ -20,6 +23,14 @@ module urban
     integer(c_int) :: omp_num_threads
   end type UrbanConfig_c
 
+  ! UrbanInputs_c: C-interoperable input data structure
+  ! WARNING: Do not directly access or modify member variables (solar_down, 
+  ! longwave_down, air_temp, wind_speed). Use the provided setter functions:
+  !   - UrbanInputsSetSolarDown(in, array, status)
+  !   - UrbanInputsSetLongwaveDown(in, array, status)
+  !   - UrbanInputsSetAirTemp(in, array, status)
+  !   - UrbanInputsSetWindSpeed(in, array, status)
+  ! Direct field access bypasses proper array handling and may cause errors.
   type, bind(C) :: UrbanInputs_c
     type(UrbanArrayD_c) :: solar_down
     type(UrbanArrayD_c) :: longwave_down
@@ -27,6 +38,14 @@ module urban
     type(UrbanArrayD_c) :: wind_speed
   end type UrbanInputs_c
 
+  ! UrbanOutputs_c: C-interoperable output data structure
+  ! WARNING: Do not directly access or modify member variables (net_shortwave,
+  ! net_longwave, surface_flux). Use the provided getter functions before
+  ! calling UrbanGetOutputs:
+  !   - UrbanOutputsGetNetShortwave(out, array, status)
+  !   - UrbanOutputsGetNetLongwave(out, array, status)
+  !   - UrbanOutputsGetSurfaceFlux(out, array, status)
+  ! Direct field access bypasses proper array handling and may cause errors.
   type, bind(C) :: UrbanOutputs_c
     type(UrbanArrayD_c) :: net_shortwave
     type(UrbanArrayD_c) :: net_longwave
@@ -109,6 +128,64 @@ contains
     x%data = c_loc(a(1))
     x%size = size(a, kind=c_size_t)
   end function make_array_d
+
+  ! Setter functions for UrbanInputs_c
+  subroutine UrbanInputsSetSolarDown(in, a, status)
+    type(UrbanInputs_c), intent(inout) :: in
+    real(c_double), intent(in), target :: a(:)
+    integer(c_int), intent(out) :: status
+    in%solar_down = make_array_d(a)
+    status = URBAN_SUCCESS
+  end subroutine UrbanInputsSetSolarDown
+
+  subroutine UrbanInputsSetLongwaveDown(in, a, status)
+    type(UrbanInputs_c), intent(inout) :: in
+    real(c_double), intent(in), target :: a(:)
+    integer(c_int), intent(out) :: status
+    in%longwave_down = make_array_d(a)
+    status = URBAN_SUCCESS
+  end subroutine UrbanInputsSetLongwaveDown
+
+  subroutine UrbanInputsSetAirTemp(in, a, status)
+    type(UrbanInputs_c), intent(inout) :: in
+    real(c_double), intent(in), target :: a(:)
+    integer(c_int), intent(out) :: status
+    in%air_temp = make_array_d(a)
+    status = URBAN_SUCCESS
+  end subroutine UrbanInputsSetAirTemp
+
+  subroutine UrbanInputsSetWindSpeed(in, a, status)
+    type(UrbanInputs_c), intent(inout) :: in
+    real(c_double), intent(in), target :: a(:)
+    integer(c_int), intent(out) :: status
+    in%wind_speed = make_array_d(a)
+    status = URBAN_SUCCESS
+  end subroutine UrbanInputsSetWindSpeed
+
+  ! Getter functions for UrbanOutputs_c
+  subroutine UrbanOutputsGetNetShortwave(out, a, status)
+    type(UrbanOutputs_c), intent(inout) :: out
+    real(c_double), intent(in), target :: a(:)
+    integer(c_int), intent(out) :: status
+    out%net_shortwave = make_array_d(a)
+    status = URBAN_SUCCESS
+  end subroutine UrbanOutputsGetNetShortwave
+
+  subroutine UrbanOutputsGetNetLongwave(out, a, status)
+    type(UrbanOutputs_c), intent(inout) :: out
+    real(c_double), intent(in), target :: a(:)
+    integer(c_int), intent(out) :: status
+    out%net_longwave = make_array_d(a)
+    status = URBAN_SUCCESS
+  end subroutine UrbanOutputsGetNetLongwave
+
+  subroutine UrbanOutputsGetSurfaceFlux(out, a, status)
+    type(UrbanOutputs_c), intent(inout) :: out
+    real(c_double), intent(in), target :: a(:)
+    integer(c_int), intent(out) :: status
+    out%surface_flux = make_array_d(a)
+    status = URBAN_SUCCESS
+  end subroutine UrbanOutputsGetSurfaceFlux
 
   ! Fortran-friendly wrappers that accept UrbanType and forward to C bindings
   subroutine UrbanCreate(cfg, sim, status)

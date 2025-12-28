@@ -34,18 +34,18 @@ program driver_urban_f
     wind(i) = 2.0d0
   end do
 
-  in%solar_down = make_array_d(solar)
-  in%longwave_down = make_array_d(longwave)
-  in%air_temp = make_array_d(air_temp)
-  in%wind_speed = make_array_d(wind)
+  CallA(UrbanInputsSetSolarDown(in, solar, status))
+  CallA(UrbanInputsSetLongwaveDown(in, longwave, status))
+  CallA(UrbanInputsSetAirTemp(in, air_temp, status))
+  CallA(UrbanInputsSetWindSpeed(in, wind, status))
 
   CallA(UrbanSetInputs(sim, in, status))
 
   CallA(UrbanStep(sim, status))
 
-  out%net_shortwave = make_array_d(sw)
-  out%net_longwave  = make_array_d(lw)
-  out%surface_flux  = make_array_d(flux)
+  CallA(UrbanOutputsGetNetShortwave(out, sw, status))
+  CallA(UrbanOutputsGetNetLongwave(out, lw, status))
+  CallA(UrbanOutputsGetSurfaceFlux(out, flux, status))
 
   CallA(UrbanGetOutputs(sim, out, status))
 
