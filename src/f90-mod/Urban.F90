@@ -16,6 +16,15 @@ module urban
     integer(c_size_t)  :: size
   end type UrbanArrayD_c
 
+  ! UrbanConfig_c: C-interoperable configuration structure
+  ! WARNING: Do not directly access or modify member variables (N_LUN,
+  ! N_RAD_BAND, enable_openmp, omp_num_threads). Use the provided setter
+  ! functions:
+  !   - UrbanConfigSetNLun(cfg, n_lun, status)
+  !   - UrbanConfigSetNRadBand(cfg, n_rad_band, status)
+  !   - UrbanConfigSetEnableOpenMP(cfg, enable, status)
+  !   - UrbanConfigSetOMPNumThreads(cfg, num_threads, status)
+  ! Direct field access bypasses proper validation and may cause errors.
   type, bind(C) :: UrbanConfig_c
     integer(c_int) :: N_LUN
     integer(c_int) :: N_RAD_BAND
@@ -128,6 +137,39 @@ contains
     x%data = c_loc(a(1))
     x%size = size(a, kind=c_size_t)
   end function make_array_d
+
+  ! Setter functions for UrbanConfig_c
+  subroutine UrbanConfigSetNLun(cfg, n_lun, status)
+    type(UrbanConfig_c), intent(inout) :: cfg
+    integer(c_int), intent(in) :: n_lun
+    integer(c_int), intent(out) :: status
+    cfg%N_LUN = n_lun
+    status = URBAN_SUCCESS
+  end subroutine UrbanConfigSetNLun
+
+  subroutine UrbanConfigSetNRadBand(cfg, n_rad_band, status)
+    type(UrbanConfig_c), intent(inout) :: cfg
+    integer(c_int), intent(in) :: n_rad_band
+    integer(c_int), intent(out) :: status
+    cfg%N_RAD_BAND = n_rad_band
+    status = URBAN_SUCCESS
+  end subroutine UrbanConfigSetNRadBand
+
+  subroutine UrbanConfigSetEnableOpenMP(cfg, enable, status)
+    type(UrbanConfig_c), intent(inout) :: cfg
+    logical(c_bool), intent(in) :: enable
+    integer(c_int), intent(out) :: status
+    cfg%enable_openmp = enable
+    status = URBAN_SUCCESS
+  end subroutine UrbanConfigSetEnableOpenMP
+
+  subroutine UrbanConfigSetOMPNumThreads(cfg, num_threads, status)
+    type(UrbanConfig_c), intent(inout) :: cfg
+    integer(c_int), intent(in) :: num_threads
+    integer(c_int), intent(out) :: status
+    cfg%omp_num_threads = num_threads
+    status = URBAN_SUCCESS
+  end subroutine UrbanConfigSetOMPNumThreads
 
   ! Setter functions for UrbanInputs_c
   subroutine UrbanInputsSetSolarDown(in, a, status)

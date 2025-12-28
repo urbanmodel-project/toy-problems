@@ -18,10 +18,10 @@ program driver_urban_f
 
   call UrbanKokkosInitialize()
 
-  cfg%N_LUN = N_LUN
-  cfg%N_RAD_BAND = N_RAD_BAND
-  cfg%enable_openmp = .true.
-  cfg%omp_num_threads = 1
+  CallA(UrbanConfigSetNLun(cfg, N_LUN, status))
+  CallA(UrbanConfigSetNRadBand(cfg, N_RAD_BAND, status))
+  CallA(UrbanConfigSetEnableOpenMP(cfg, .true._c_bool, status))
+  CallA(UrbanConfigSetOMPNumThreads(cfg, 1, status))
 
   CallA(UrbanCreate(cfg, sim, status))
 
