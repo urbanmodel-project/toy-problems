@@ -1,3 +1,4 @@
+add_executable(tridiagonal tridiagonal.cpp)
 add_executable(driver_vector_add driver_vector_add.cpp)
 add_executable(driver_urban 
   driver_urban.cpp
@@ -23,3 +24,13 @@ target_link_libraries(driver_urban
     Kokkos::kokkos
 )
 
+target_include_directories(tridiagonal
+  PUBLIC
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/src
+)
+
+target_link_libraries(tridiagonal
+  PRIVATE
+    Kokkos::kokkos
+)
