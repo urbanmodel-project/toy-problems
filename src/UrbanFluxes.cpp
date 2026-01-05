@@ -48,7 +48,7 @@ UrbanSurfaceFluxes::UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle)
   ALLOCATE_VIEW(fPervRoad, Array1DR8, N_LUN);
   ALLOCATE_VIEW(fRoof, Array1DR8, N_LUN);
 
-  Array1DR8 qafH, tafH, fPervRoadH, fRoofH;
+  HostArray1DR8 qafH, tafH, fPervRoadH, fRoofH;
   ALLOCATE_VIEW(qafH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(tafH, HostArray1DR8, N_LUN);
   ALLOCATE_VIEW(fPervRoadH, HostArray1DR8, N_LUN);
@@ -175,7 +175,7 @@ void QSat(Real T, Real p, Real &es, Real &esdT, Real &qs, Real &qsdT) {
 }
 
 KOKKOS_INLINE_FUNCTION
-void UrbanSurface::ComputeQsat(int c, Real p) {
+void UrbanSurface::ComputeQsat(int c, Real p) const {
   Real T = Temp(c);
   QSat(T, p, es(c), esdT(c), qs(c), qsdT(c));
 }
@@ -184,11 +184,11 @@ KOKKOS_INLINE_FUNCTION
 void MoninObukIni(Real ur, Real thv, Real dthv, Real zldis, Real z0m, Real &um,
                   Real &obu) {
 
-  const Real ustar = 0.06;
+  //const Real ustar = 0.06;
   const Real wc = 0.5;
 
   if (dthv > 0) {
-    um = std::max(ur, 1.0);
+    um = Kokkos::max(ur, 1.0);
   } else {
     um = std::pow(std::pow(ur, 2.0) + std::pow(wc, 2.0), 0.5);
   }
@@ -197,11 +197,11 @@ void MoninObukIni(Real ur, Real thv, Real dthv, Real zldis, Real z0m, Real &um,
 
   Real zeta;
   if (rib >= 0) {
-    zeta = rib * std::log(zldis / z0m) / (1.0 - 0.5 * std::min(rib, 0.19));
-    zeta = std::min(2.0, std::max(zeta, 0.01));
+    zeta = rib * std::log(zldis / z0m) / (1.0 - 0.5 * Kokkos::min(rib, 0.19));
+    zeta = Kokkos::min(2.0, Kokkos::max(zeta, 0.01));
   } else {
     zeta = rib * std::log(zldis / z0m);
-    zeta = std::max(-100.0, std::min(zeta, -0.01));
+    zeta = Kokkos::max(-100.0, Kokkos::min(zeta, -0.01));
   }
 
   obu = zldis / zeta;
@@ -285,7 +285,7 @@ void ComputeU10m(Real zldis, Real obu, Real z0m, Real um, Real ustar,
 
       Real term2, term3;
       StabilityFunc1(-ZETAM, term2);
-      StabilityFunc1((10.0 + z0m) / obu, term2);
+      StabilityFunc1((10.0 + z0m) / obu, term3);
 
       u10 = um - ustar / VKC * (term1 - term2 + term3 + term4);
 
@@ -371,16 +371,18 @@ void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
 
   const Real z0m = z0;
   const Real z0h = z0;
-  const Real z0q = z0;
+  //const Real z0q = z0;
 
   ComputeUstar(zldis, obu, z0m, um, ustar);
 
+  /*
   Real vds;
   if (zeta < 0) {
     vds = 2.0e-3 * ustar * (1.0 + std::pow(300.0 / (-obu), 0.666));
   } else {
     vds = 2.0e-3 * ustar;
   }
+  */
 
   Real u10;
   ComputeU10m(zldis, obu, z0m, um, ustar, u10);
@@ -400,13 +402,13 @@ void FrictionVelocity(int iter, Real forc_hgt_u, Real displa, Real z0, Real obu,
   temp22m = temp12m;
 
   Real fmnew;
-  if (std::min(zeta, 1.0) < 0.0) {
-    const Real x = std::pow((1.0 - 16.0 * std::min(zeta, 1.0)), 0.25);
+  if (Kokkos::min(zeta, 1.0) < 0.0) {
+    const Real x = std::pow((1.0 - 16.0 * Kokkos::min(zeta, 1.0)), 0.25);
     const Real tmp2 = std::log((1.0 + x * x) / 2.0);
     const Real tmp3 = std::log((!.0 + x) / 2.0);
     fmnew = 2.0 * tmp3 + tmp2 - std::atan(x) + M_PI / 2.0;
   } else {
-    fmnew = -5.0 * std::min(zeta, 1.0);
+    fmnew = -5.0 * Kokkos::min(zeta, 1.0);
   }
 
   if (iter == 0)
@@ -443,9 +445,7 @@ void ComputeCanyonUWind(Real ht_roof, Real z_d_town, Real z_0_town,
 }
 
 KOKKOS_INLINE_FUNCTION
-void UrbanSurfaceFluxes::computeQsatForSurfaces(int c) {
-
-  const Real forc_p = ForcPbot(c);
+void UrbanSurfaceFluxes::computeQsatForSurfaces(int c, Real forc_p) const {
 
   Roof.ComputeQsat(c, forc_p);
   SunlitWall.ComputeQsat(c, forc_p);
@@ -457,7 +457,7 @@ void UrbanSurfaceFluxes::computeQsatForSurfaces(int c) {
 KOKKOS_INLINE_FUNCTION
 void UrbanSurfaceFluxes::computeNewTafAndQaf(int c, Real canyon_wind, Real thm,
                                              Real rahu, Real rawu, Real &taf,
-                                             Real &qaf) {
+                                             Real &qaf) const {
 
   const Real hwr = data_bundle.geometry.CanyonHwr(c);
 
@@ -526,7 +526,7 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
 
   int N_LUN = data_bundle.N_LUN;
   Kokkos::parallel_for(
-      "computeNetSurfaceFluxes", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "computeNetSurfaceFluxes", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
         const Real forc_hgt_t = 144.44377627618979; // observational height (m)
         const Real forc_hgt_u = forc_hgt_t;         // observational height (m)
         const Real z_d_town = 113.96331622200367;   // displacement height (m)
@@ -544,7 +544,7 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
         const Real forc_v = ForcV(c);
         const Real u2_plus_v2 = std::pow(forc_u, 2.0) + std::pow(forc_v, 2.0);
         const Real velocity = std::pow(u2_plus_v2, 0.5);
-        const Real ur = std::max(1.0, velocity);
+        const Real ur = Kokkos::max(1.0, velocity);
 
         const Real hwr = data_bundle.geometry.CanyonHwr(c);
 
@@ -566,7 +566,8 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
           MoninObukIni(ur, thv, dthv, zldis, z_0_town, um, obu);
         }
 
-        computeQsatForSurfaces(c);
+        Real forc_p = ForcPbot(c);
+        computeQsatForSurfaces(c, forc_p);
         Real canyon_u_wind;
         ComputeCanyonUWind(ht_roof, z_d_town, z_0_town, forc_hgt_u,
                            wind_hgt_canyon, hwr, ur, canyon_u_wind);
@@ -579,7 +580,7 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
           FrictionVelocity(iter, forc_hgt_u, z_d_town, z_0_town, obu, ur, um,
                            ustar, temp1, temp12m, temp2, temp22m, fm);
 
-          Real ramu = 1.0 / (ustar * ustar / um);
+          //Real ramu = 1.0 / (ustar * ustar / um);
           Real rahu = 1.0 / (temp1 * ustar);
           Real rawu = 1.0 / (temp2 * ustar);
 
@@ -598,8 +599,8 @@ void UrbanSurfaceFluxes::computeSurfaceFluxes() {
               zldis * VKC * GRAVITY * thvstar / (std::pow(ustar, 2.0) * thv);
 
           if (zeta > 0.0) {
-            zeta = std::min(2.0, std::max(zeta, 0.01));
-            um = std::max(ur, 0.1);
+            zeta = Kokkos::min(2.0, Kokkos::max(zeta, 0.01));
+            um = Kokkos::max(ur, 0.1);
           } else {
             const Real beta = 1.0;
             const Real zii = 1000.0;

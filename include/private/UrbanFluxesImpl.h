@@ -17,7 +17,7 @@ public:
   Array1DR8 qsdT;
 
   UrbanSurface(int, Real);
-  KOKKOS_INLINE_FUNCTION void ComputeQsat(int, Real);
+  KOKKOS_INLINE_FUNCTION void ComputeQsat(int, Real) const;
 };
 
 class UrbanSurfaceFluxes {
@@ -47,8 +47,8 @@ private:
 public:
   UrbanSurfaceFluxes(UrbanSharedDataBundle &bundle);
   void computeSurfaceFluxes();
-  void computeNewTafAndQaf(int c, Real, Real, Real, Real, Real &, Real &);
-  void computeQsatForSurfaces(int);
+  KOKKOS_INLINE_FUNCTION void computeNewTafAndQaf(int c, Real, Real, Real, Real, Real &, Real &) const;
+  KOKKOS_INLINE_FUNCTION void computeQsatForSurfaces(int, Real) const;
 };
 
 } // namespace URBANXX
