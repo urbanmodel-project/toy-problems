@@ -18,8 +18,8 @@ private:
 
 public:
   NetSolarRoad(CanyonGeometryData *geometry, RoadDataType &roadData, Real);
-  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
-  void ComputeRefRadByComponent(RadIndices idx, Real InRad,
+  KOKKOS_INLINE_FUNCTION void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
+  KOKKOS_INLINE_FUNCTION void ComputeRefRadByComponent(RadIndices idx, Real InRad,
                                 RadRefComponents &ref) const;
 };
 
@@ -33,8 +33,8 @@ private:
 
 public:
   NetSolarWall(CanyonGeometryData *geometry, WallDataType &wallData);
-  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
-  void ComputeRefRadByComponent(RadIndices idx, Real InRad,
+  KOKKOS_INLINE_FUNCTION void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
+  KOKKOS_INLINE_FUNCTION void ComputeRefRadByComponent(RadIndices idx, Real InRad,
                                 RadRefComponents &ref) const;
 };
 

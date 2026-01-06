@@ -166,7 +166,7 @@ void UrbanDataAllocator::initialize_canyon_geometry() {
     print_view_1d(CanyonHwr, "CanyonHwr");
 
   Kokkos::parallel_for(
-      "ComputingViewFactors", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "ComputingViewFactors", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
         Array1DR8 sr = data_bundle.geometry.ViewFactorSkyFromRoad;
         Array1DR8 sw = data_bundle.geometry.ViewFactorSkyFromWall;
         Array1DR8 rw = data_bundle.geometry.ViewFactorRoadFromWall;
@@ -204,7 +204,7 @@ void UrbanDataAllocator::initialize_properties() {
   const Real EMISS_WALL = 0.90200001001358032;
 
   Kokkos::parallel_for(
-      "SetParameters", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "SetParameters", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
         Array3DR8 alb_roof = data_bundle.Roof.BaseAlbedo;
         // Array2DR8 alb_roof_dif = data_bundle.Roof.BaseAlbedo.dif;
         Array3DR8 alb_improad = data_bundle.ImperviousRoad.BaseAlbedo;
@@ -262,7 +262,7 @@ void UrbanDataAllocator::initialize_states() {
   const Real WIND_AIR = 0.52482489069830152;
 
   Kokkos::parallel_for(
-      "SetParameters", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "SetParameters", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
         Array1DR8 T_improad = data_bundle.ImperviousRoad.Temperature;
         Array1DR8 T_perroad = data_bundle.PerviousRoad.Temperature;
         Array1DR8 T_roof = data_bundle.Roof.Temperature;

@@ -178,7 +178,7 @@ void UrbanAlbedo::computeIncidentRadiation() {
   int N_RAD_BAND = data_bundle.N_RAD_BAND;
 
   Kokkos::parallel_for(
-      "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "ComputeIncidentRadiation", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
         const Real coszen = data_bundle.input.Coszen(c);
         const Real hwr = data_bundle.geometry.CanyonHwr(c);
 
@@ -191,14 +191,21 @@ void UrbanAlbedo::computeIncidentRadiation() {
 
         // the incident direct and diffuse radiation for VIS and NIR bands is
         // assumed to be unity
-        std::vector<Real> sdir(N_RAD_BAND, 1.0);
-        std::vector<Real> sdif(N_RAD_BAND, 1.0);
+        //std::vector<Real> sdir(N_RAD_BAND, 1.0);
+        //std::vector<Real> sdif(N_RAD_BAND, 1.0);
+        Real sdir[2];
+        Real sdif[2];
+
+        for (int i = 0; i < N_RAD_BAND; ++i) {
+          sdir[i] = 1.0;
+          sdif[i] = 1.0;
+        }
 
         if (coszen > 0) {
           const Real tiny = 1.0e-6;
           const Real zen = std::acos(coszen);
-          const Real z = std::max(zen, tiny);
-          const Real val = std::min(1.0 / (hwr * std::tan(z)), 1.0);
+          const Real z = Kokkos::max(zen, tiny);
+          const Real val = Kokkos::min(1.0 / (hwr * std::tan(z)), 1.0);
           const Real theta0 = std::asin(val);
           const Real tanzen = std::tan(zen);
           const Real costheta0 = std::cos(theta0);
@@ -243,7 +250,7 @@ void UrbanAlbedo::computeSnowAlbedo() {
   int N_LUN = data_bundle.N_LUN;
   int N_RAD_BAND = data_bundle.N_RAD_BAND;
   Kokkos::parallel_for(
-      "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "ComputeIncidentRadiation", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
         const Real coszen = data_bundle.input.Coszen(c);
 
         Array3DR8 albsn_roof = data_bundle.Roof.SnowAlbedo;
@@ -284,7 +291,7 @@ void UrbanAlbedo::computeCombinedAlbedo() {
   int N_LUN = data_bundle.N_LUN;
   int N_RAD_BAND = data_bundle.N_RAD_BAND;
   Kokkos::parallel_for(
-      "ComputeIncidentRadiation", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "ComputeIncidentRadiation", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
         const Real coszen = data_bundle.input.Coszen(c);
 
         Array3DR8 albsn_roof = data_bundle.Roof.SnowAlbedo;
@@ -348,7 +355,7 @@ void UrbanAlbedo::computeNetSolar() {
   int N_RAD_BAND = data_bundle.N_RAD_BAND;
 
   Kokkos::parallel_for(
-      "ComputeNetSolar", N_LUN, KOKKOS_LAMBDA(const int c) {
+      "ComputeNetSolar", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
         const Real coszen = data_bundle.input.Coszen(c);
         if (coszen > 0) {
 
@@ -502,7 +509,7 @@ void UrbanAlbedo::computeNetSolar() {
                 RefShadewall(c, ib, rtype) += ShadewallRef.ToSky;
 
                 Real crit =
-                    std::max({RoadAbs, SunwallOut.Abs, ShadewallOut.Abs});
+                    Kokkos::max({RoadAbs, SunwallOut.Abs, ShadewallOut.Abs});
                 if (c == 0)
                   printf("(%d, %d, %d): %d %e %e %e\n", c, ib, rtype, iter,
                          RoadAbs, SunwallOut.Abs, ShadewallOut.Abs);
@@ -518,7 +525,7 @@ void UrbanAlbedo::computeNetSolar() {
       });
 
   if (0) {
-    // print_view_2d(data_bundle.Roof.AlbedoWithSnowEffects.dir);
+    print_view_3d(data_bundle.CombinedRoad.DownwellingShortRad);
   }
 }
 
