@@ -169,38 +169,33 @@ void UrbanLongwave::setLongwaveInputs() {
 
 void UrbanLongwave::computeNetLongwave() {
   int N_LUN = data_bundle.N_LUN;
-  auto & vf_sr_view = data_bundle.geometry.ViewFactorSkyFromRoad;
-  auto & vf_sw_view = data_bundle.geometry.ViewFactorSkyFromWall;
-  auto & hwr_view = data_bundle.geometry.CanyonHwr;
-  auto & dwlong_view = data_bundle.input.DownwellingLongRad;
+  auto& vf_sr = data_bundle.geometry.ViewFactorSkyFromRoad;
+  auto& vf_sw = data_bundle.geometry.ViewFactorSkyFromWall;
+  auto& hwr = data_bundle.geometry.CanyonHwr;
+  auto& DwLong = data_bundle.input.DownwellingLongRad;
+  
+  auto& NetImproad = data_bundle.ImperviousRoad.NetLongRad;
+  auto& NetPerroad = data_bundle.PerviousRoad.NetLongRad;
+  auto& NetSunwall = data_bundle.SunlitWall.NetLongRad;
+  auto& NetShadewall = data_bundle.ShadedWall.NetLongRad;
+  
+  auto& UpImproad = data_bundle.ImperviousRoad.UpwardLongRad;
+  auto& UpPerroad = data_bundle.PerviousRoad.UpwardLongRad;
+  auto& UpSunwall = data_bundle.SunlitWall.UpwardLongRad;
+  auto& UpShadewall = data_bundle.ShadedWall.UpwardLongRad;
 
-  if (vf_sr_view.extent(0) == 0 || vf_sw_view.extent(0) == 0 ||
-      hwr_view.extent(0) == 0 || dwlong_view.extent(0) == 0) {
+  if (vf_sr.extent(0) == 0 || vf_sw.extent(0) == 0 ||
+      hwr.extent(0) == 0 || DwLong.extent(0) == 0) {
     throw std::runtime_error(
         std::string("UrbanLongwave::computeNetLongwave: one or more views have "
                     "zero extent:") +
-        " vf_sr=" + std::to_string(vf_sr_view.extent(0)) +
-        " vf_sw=" + std::to_string(vf_sw_view.extent(0)) +
-        " hwr=" + std::to_string(hwr_view.extent(0)) +
-        " dwlong=" + std::to_string(dwlong_view.extent(0)));
+        " vf_sr=" + std::to_string(vf_sr.extent(0)) +
+        " vf_sw=" + std::to_string(vf_sw.extent(0)) +
+        " hwr=" + std::to_string(hwr.extent(0)) +
+        " dwlong=" + std::to_string(DwLong.extent(0)));
   }
   Kokkos::parallel_for(
-      "ComputeNetLongwave", N_LUN, KOKKOS_LAMBDA(const int c) {
-        Array1DR8 vf_sr = data_bundle.geometry.ViewFactorSkyFromRoad;
-        Array1DR8 vf_sw = data_bundle.geometry.ViewFactorSkyFromWall;
-        Array1DR8 hwr = data_bundle.geometry.CanyonHwr;
-
-        Array1DR8 DwLong = data_bundle.input.DownwellingLongRad;
-
-        Array1DR8 NetImproad = data_bundle.ImperviousRoad.NetLongRad;
-        Array1DR8 NetPerroad = data_bundle.PerviousRoad.NetLongRad;
-        Array1DR8 NetSunwall = data_bundle.SunlitWall.NetLongRad;
-        Array1DR8 NetShadewall = data_bundle.ShadedWall.NetLongRad;
-
-        Array1DR8 UpImproad = data_bundle.ImperviousRoad.UpwardLongRad;
-        Array1DR8 UpPerroad = data_bundle.PerviousRoad.UpwardLongRad;
-        Array1DR8 UpSunwall = data_bundle.SunlitWall.UpwardLongRad;
-        Array1DR8 UpShadewall = data_bundle.ShadedWall.UpwardLongRad;
+      "ComputeNetLongwave", N_LUN, KOKKOS_CLASS_LAMBDA(const int c) {
 
         RadIndices idx{c, 0, 0};
 

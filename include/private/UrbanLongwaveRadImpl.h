@@ -18,12 +18,12 @@ private:
 
 public:
   NetLongwaveRoad(CanyonGeometryData *geometry, RoadDataType &roadData, Real);
-  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
-  void ComputeRadByComponent(RadIndices idx, Real InRad,
+  KOKKOS_FUNCTION void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
+  KOKKOS_FUNCTION void ComputeRadByComponent(RadIndices idx, Real InRad,
                              RadRefComponents &ref) const;
-  void ComputeRefRadByComponent(RadIndices idx, Real InRad,
+  KOKKOS_FUNCTION void ComputeRefRadByComponent(RadIndices idx, Real InRad,
                                 RadRefComponents &ref) const;
-  void ComputeEmiRadByComponent(RadIndices idx, Real InRad,
+  KOKKOS_FUNCTION void ComputeEmiRadByComponent(RadIndices idx, Real InRad,
                                 RadRefComponents &ref) const;
 };
 
@@ -37,12 +37,12 @@ private:
 
 public:
   NetLongwaveWall(CanyonGeometryData *geometry, WallDataType &wallData);
-  void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
-  void ComputeRadByComponent(RadIndices idx, Real InRad,
+  KOKKOS_FUNCTION void ComputeAbsAndRefRad(RadIndices idx, Real InRad, RadOutput &out) const;
+  KOKKOS_FUNCTION void ComputeRadByComponent(RadIndices idx, Real InRad,
                              RadRefComponents &ref) const;
-  void ComputeRefRadByComponent(RadIndices idx, Real InRad,
+  KOKKOS_FUNCTION void ComputeRefRadByComponent(RadIndices idx, Real InRad,
                                 RadRefComponents &ref) const;
-  void ComputeEmiRadByComponent(RadIndices idx, Real InRad,
+  KOKKOS_FUNCTION void ComputeEmiRadByComponent(RadIndices idx, Real InRad,
                                 RadRefComponents &ref) const;
 };
 
