@@ -169,10 +169,10 @@ void UrbanLongwave::setLongwaveInputs() {
 
 void UrbanLongwave::computeNetLongwave() {
   int N_LUN = data_bundle.N_LUN;
-  auto vf_sr_view = data_bundle.geometry.ViewFactorSkyFromRoad;
-  auto vf_sw_view = data_bundle.geometry.ViewFactorSkyFromWall;
-  auto hwr_view = data_bundle.geometry.CanyonHwr;
-  auto dwlong_view = data_bundle.input.DownwellingLongRad;
+  auto & vf_sr_view = data_bundle.geometry.ViewFactorSkyFromRoad;
+  auto & vf_sw_view = data_bundle.geometry.ViewFactorSkyFromWall;
+  auto & hwr_view = data_bundle.geometry.CanyonHwr;
+  auto & dwlong_view = data_bundle.input.DownwellingLongRad;
 
   if (vf_sr_view.extent(0) == 0 || vf_sw_view.extent(0) == 0 ||
       hwr_view.extent(0) == 0 || dwlong_view.extent(0) == 0) {
